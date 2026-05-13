@@ -98,12 +98,12 @@ const update = async (req, res) => {
 
 const remove = async (req, res) => {
   try {
-    const productos = await pool.query(
-      'SELECT id_producto FROM producto WHERE id_categoria = $1 LIMIT 1',
-      [req.params.id]
-    );
-    if (productos.rows.length > 0)
-      return res.status(400).json({ error: 'No se puede eliminar, la categoría tiene productos asociados.' });
+    // const productos = await pool.query(
+    //   'SELECT id_producto FROM producto WHERE id_categoria = $1 LIMIT 1',
+    //   [req.params.id]
+    // );
+    // if (productos.rows.length > 0)
+    //   return res.status(400).json({ error: 'No se puede eliminar, la categoría tiene productos asociados.' });
 
     const result = await pool.query(
       'DELETE FROM categoria_producto WHERE id_categoria = $1 RETURNING *',

@@ -98,9 +98,11 @@ INSERT INTO direccion_envio VALUES
 CREATE TABLE categoria_producto (
     id_categoria      SERIAL PRIMARY KEY,
     nombre_categoria  VARCHAR(100) NOT NULL UNIQUE,
-    descripcion       TEXT
+    descripcion       VARCHAR(255) NOT NULL,
+    estado            VARCHAR(20) NOT NULL DEFAULT 'activo',
+    CONSTRAINT chk_estado_categoria
+    CHECK (estado IN ('activo', 'inactivo'))
 );
-
 INSERT INTO categoria_producto VALUES
     (1, 'Ropa Deportiva',   'Prendas para deporte y actividad física'),
     (2, 'Accesorios',       'Accesorios de moda y uso diario'),
