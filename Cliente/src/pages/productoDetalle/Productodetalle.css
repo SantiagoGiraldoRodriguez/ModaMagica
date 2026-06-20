@@ -1,0 +1,48 @@
+/* ════════════ DETALLE DE PRODUCTO — página independiente ════════════
+   Reutiliza clases de Tienda.css (t-gallery, t-opt-*, t-related, etc.)
+   para mantener el mismo lenguaje visual; este archivo solo cubre el
+   header propio de la página y el layout que antes vivía en el modal. */
+
+.pd-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 32px;
+  background: #fff;
+  border-bottom: 1px solid var(--gray-mid);
+}
+
+.pd-header-actions { display: flex; align-items: center; gap: 12px; }
+
+.pd-back {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: none;
+  border: none;
+  color: #555;
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 9px 16px;
+  border-radius: 8px;
+  transition: background 0.15s, color 0.15s;
+}
+.pd-back:hover { background: var(--gray-light); color: var(--gold-dark); }
+
+.pd-inner { padding-top: 32px; padding-bottom: 64px; }
+
+.pd-grid { gap: 56px; }
+
+.pd-name { font-size: 30px; margin-bottom: 14px; }
+
+.pd-related { margin-top: 56px; padding-top: 36px; }
+
+@media (max-width: 768px) {
+  .pd-header { padding: 14px 18px; }
+  .pd-back span { display: none; }
+  .pd-inner { padding-top: 20px; }
+  .pd-grid { grid-template-columns: 1fr; gap: 28px; }
+  .pd-name { font-size: 24px; }
+}

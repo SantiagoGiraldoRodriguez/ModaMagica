@@ -1,0 +1,399 @@
+/* Usuarios.css — Estilos del módulo Usuarios */
+
+/* ── Cabecera de tabla ── */
+.u-tabla-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 18px;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.u-tabla-titulo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--text);
+}
+
+.u-tabla-count-badge {
+  background: var(--gold);
+  color: #fff;
+  padding: 2px 9px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+  margin-left: 4px;
+}
+
+.u-tabla-filtros {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+/* ===== Dropdown personalizado (filtros de rol / estado) ===== */
+.u-dropdown {
+  position: relative;
+}
+
+.form-group .u-dropdown {
+  width: 100%;
+}
+
+.u-dropdown-btn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-width: 160px;
+  padding: 9px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  box-sizing: border-box;
+}
+
+.form-group .u-dropdown-btn {
+  width: 100%;
+  min-width: 0;
+}
+
+.u-dropdown-btn:hover {
+  border-color: var(--gold);
+}
+
+.u-dropdown-btn.open {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 3px rgba(201, 150, 42, 0.15);
+}
+
+.u-dropdown-btn.has-error {
+  border-color: var(--gold);
+}
+
+.u-dropdown-placeholder {
+  color: var(--text-secondary, #64748b);
+}
+
+.u-dropdown-chevron {
+  font-size: 11px;
+  color: var(--text-secondary, #64748b);
+  transition: transform 0.15s;
+}
+
+.u-dropdown-btn.open .u-dropdown-chevron {
+  transform: rotate(180deg);
+  color: var(--gold);
+}
+
+.u-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  z-index: 30;
+  list-style: none;
+  margin: 0;
+  padding: 6px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12);
+  overflow: hidden;
+  animation: u-dropdown-fade 0.12s ease-out;
+}
+
+@keyframes u-dropdown-fade {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.u-dropdown-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 9px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  color: var(--text);
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s;
+}
+
+.u-dropdown-item:hover {
+  background: rgba(201, 150, 42, 0.12);
+  color: var(--gold);
+}
+
+.u-dropdown-item.active {
+  background: var(--gold);
+  color: #fff;
+  font-weight: 600;
+}
+
+.u-dropdown-item.active:hover {
+  background: var(--gold);
+  color: #fff;
+}
+
+.u-dropdown-check {
+  font-size: 12px;
+}
+
+/* ── Celdas de tabla ── */
+.u-td-numero {
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+.u-td-usuario {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.u-avatar {
+  width: 38px;
+  min-width: 38px;
+  max-width: 38px;
+  height: 38px;
+  min-height: 38px;
+  max-height: 38px;
+  border-radius: 50%;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 13px;
+  flex-shrink: 0;
+  flex-grow: 0;
+  box-sizing: border-box;
+  overflow: hidden;
+  line-height: 1;
+}
+
+.u-nombre {
+  font-size: 14px;
+}
+
+.u-td-correo {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.u-td-telefono {
+  font-size: 13px;
+}
+
+.u-td-direccion {
+  font-size: 12px;
+  color: var(--text-secondary);
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.u-td-fecha {
+  font-size: 13px;
+}
+
+.u-td-fecha-sec {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.u-rol-badge {
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.u-rol-icon {
+  font-size: 11px;
+}
+
+.u-estado-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+/* ── Paginación ── */
+.u-paginacion {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  margin-top: 18px;
+}
+
+.u-paginacion-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.u-paginacion-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+.u-paginacion-page {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--text);
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.u-paginacion-page.active {
+  background: var(--accent);
+  color: white;
+}
+
+/* ===== MODAL CREAR / EDITAR USUARIO ===== */
+
+.u-server-error {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 12px;
+  font-size: 13px;
+  color: var(--gold);
+  font-weight: 500;
+  background: rgba(201, 150, 42, 0.08);
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(201, 150, 42, 0.3);
+}
+
+.u-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.u-form-full {
+  grid-column: 1 / -1;
+}
+
+/* ── FieldError ── */
+.u-field-error {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 5px;
+  font-size: 12px;
+  color: var(--gold);
+  font-weight: 500;
+}
+
+/* ===== Botón "Info" en la columna de acciones ===== */
+.tbl-btn.info {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  width: auto;
+  padding: 0 10px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #3b82f6;
+  background: rgba(59, 130, 246, 0.1);
+}
+
+.tbl-btn.info:hover {
+  background: rgba(59, 130, 246, 0.18);
+}
+
+/* ===== Modal de información del usuario ===== */
+.u-info-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding-bottom: 16px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.u-avatar-lg {
+  width: 52px;
+  min-width: 52px;
+  max-width: 52px;
+  height: 52px;
+  min-height: 52px;
+  max-height: 52px;
+  font-size: 18px;
+}
+
+.u-info-nombre {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 6px;
+}
+
+.u-info-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.u-info-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.u-info-item:last-child {
+  border-bottom: none;
+}
+
+.u-info-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--text-secondary, #64748b);
+  white-space: nowrap;
+}
+
+.u-info-valor {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  text-align: right;
+  word-break: break-word;
+}

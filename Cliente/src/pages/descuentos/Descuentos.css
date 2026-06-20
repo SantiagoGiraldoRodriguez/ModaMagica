@@ -1,0 +1,257 @@
+/* ══════════════════════════════════════════
+   Descuentos.css — Estilos del módulo Descuentos
+   ══════════════════════════════════════════ */
+
+/* ── Error msg ── */
+.desc-error-msg { display: flex; align-items: center; gap: 6px; margin-top: 5px; font-size: 12px; color: var(--gold); font-weight: 500; }
+
+/* ── Error externo (fuera del modal) ── */
+.desc-server-error-wrap { margin-bottom: 12px; }
+
+/* ── Cabecera tabla ── */
+.desc-tabla-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; flex-wrap: wrap; gap: 10px; }
+.desc-tabla-titulo { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 15px; color: var(--text); }
+.desc-tabla-count-badge { background: var(--gold); color: #fff; padding: 2px 9px; border-radius: 20px; font-size: 12px; font-weight: 700; margin-left: 4px; }
+.desc-tabla-filtros { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+
+/* ===== Dropdown personalizado (filtro de estado / estado en modal) ===== */
+.desc-dropdown { position: relative; }
+
+.form-group .desc-dropdown { width: 100%; }
+
+.desc-dropdown-btn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-width: 160px;
+  padding: 9px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  box-sizing: border-box;
+}
+
+.form-group .desc-dropdown-btn {
+  width: 100%;
+  min-width: 0;
+}
+
+.desc-dropdown-btn:hover {
+  border-color: var(--gold);
+}
+
+.desc-dropdown-btn.open {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 3px rgba(201, 150, 42, 0.15);
+}
+
+.desc-dropdown-chevron {
+  font-size: 11px;
+  color: var(--text-secondary, #64748b);
+  transition: transform 0.15s;
+}
+
+.desc-dropdown-btn.open .desc-dropdown-chevron {
+  transform: rotate(180deg);
+  color: var(--gold);
+}
+
+.desc-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  z-index: 30;
+  list-style: none;
+  margin: 0;
+  padding: 6px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12);
+  overflow: hidden;
+  animation: desc-dropdown-fade 0.12s ease-out;
+}
+
+@keyframes desc-dropdown-fade {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.desc-dropdown-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 9px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  color: var(--text);
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s;
+}
+
+.desc-dropdown-item:hover {
+  background: rgba(201, 150, 42, 0.12);
+  color: var(--gold);
+}
+
+.desc-dropdown-item.active {
+  background: var(--gold);
+  color: #fff;
+  font-weight: 600;
+}
+
+.desc-dropdown-item.active:hover {
+  background: var(--gold);
+  color: #fff;
+}
+
+.desc-dropdown-check {
+  font-size: 12px;
+}
+
+/* ── Tabla ── */
+.desc-table-auto { table-layout: auto; }
+.desc-th-nowrap  { width: 1%; white-space: nowrap; }
+.desc-td-nowrap  { width: 1%; white-space: nowrap; }
+
+/* ── Celdas ── */
+.desc-td-numero     { color: var(--text-secondary); font-size: 13px; }
+.desc-codigo-badge  { font-family: monospace; font-weight: 700; font-size: 13px; background: var(--gold); color: #fff; padding: 4px 10px; border-radius: 6px; letter-spacing: 1px; }
+.desc-td-text-sec   { font-size: 13px; color: var(--text-secondary); }
+.desc-td-valor      { font-weight: 700; }
+.desc-td-limite     { font-weight: 600; }
+.desc-usos-wrap     { display: flex; align-items: center; gap: 8px; }
+.desc-usos-num      { font-weight: 600; font-size: 13px; }
+.desc-usos-bar      { width: 50px; height: 5px; background: var(--border); border-radius: 3px; overflow: hidden; }
+.desc-usos-fill     { height: 100%; background: var(--accent); border-radius: 3px; }
+.desc-prendas-badge { display: inline-flex; align-items: center; gap: 4px; background: var(--gold); color: #fff; padding: 3px 9px; border-radius: 12px; font-size: 12px; font-weight: 600; }
+.desc-estado-badge  { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+.desc-estado-dot    { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+
+/* ── Paginación ── */
+.desc-paginacion     { display: flex; justify-content: center; align-items: center; gap: 6px; margin-top: 18px; }
+.desc-paginacion-btn { width: 34px; height: 34px; border-radius: 8px; border: 1px solid var(--border); background: var(--card); color: var(--text); display: flex; align-items: center; justify-content: center; cursor: pointer; }
+.desc-paginacion-btn:disabled { cursor: not-allowed; opacity: 0.4; }
+.desc-paginacion-page { width: 34px; height: 34px; border-radius: 8px; border: 1px solid var(--border); background: var(--card); color: var(--text); font-weight: 600; font-size: 13px; cursor: pointer; }
+.desc-paginacion-page.active { background: var(--accent); color: white; }
+
+/* ══════════════════════════════════════════
+   MODAL
+   ══════════════════════════════════════════ */
+
+.desc-modal-box    { max-width: 600px; max-height: 90vh; overflow-y: auto; }
+.desc-modal-icon   { color: var(--gold); }
+.desc-form-grid    { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.desc-form-full    { grid-column: 1 / -1; }
+.desc-input-mono   { font-family: monospace; letter-spacing: 1px; }
+
+/* ── Estado info ── */
+.desc-estado-info  { margin-top: 6px; font-size: 11px; color: var(--text-secondary); }
+.desc-estado-icon  { margin-right: 4px; }
+
+/* ── Label prendas count ── */
+.desc-prendas-count { margin-left: 8px; background: var(--gold); color: #fff; padding: 1px 8px; border-radius: 12px; font-size: 11px; font-weight: 700; }
+
+/* ── Buscador prendas ── */
+.desc-search-wrap  { position: relative; margin-bottom: 10px; }
+.desc-search-icon  { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--text-secondary); font-size: 13px; }
+.desc-search-input { padding-left: 32px; font-size: 13px; }
+
+/* ── Grid de tarjetas de prendas ── */
+.desc-prendas-grid       { border-radius: 10px; max-height: 280px; overflow-y: auto; background: var(--card); padding: 10px; display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; }
+.desc-prendas-grid.error { border: 1px solid var(--gold); }
+.desc-prendas-grid.normal{ border: 1px solid var(--border); }
+.desc-prendas-empty      { grid-column: 1 / -1; padding: 16px; font-size: 13px; color: var(--text-secondary); text-align: center; }
+
+/* ── Tarjeta prenda ── */
+.desc-prenda-card          { cursor: pointer; border-radius: 10px; overflow: hidden; transition: all 0.18s; position: relative; user-select: none; }
+.desc-prenda-card.normal   { border: 2px solid var(--border); background: var(--background); }
+.desc-prenda-card.selected { border: 2px solid var(--gold); background: rgba(201,150,42,0.08); }
+.desc-prenda-check         { position: absolute; top: 6px; right: 6px; z-index: 2; background: var(--gold); border-radius: 50%; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; }
+.desc-prenda-check-icon    { color: #fff; font-size: 13px; font-weight: 700; }
+.desc-prenda-img-wrap      { width: 100%; height: 100px; background: var(--border); display: flex; align-items: center; justify-content: center; overflow: hidden; }
+.desc-prenda-img           { width: 100%; height: 100%; object-fit: cover; }
+.desc-prenda-fallback      { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; color: var(--text-secondary); font-size: 28px; }
+.desc-prenda-info          { padding: 7px 8px; }
+.desc-prenda-nombre        { font-size: 12px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.desc-prenda-precio        { font-size: 11px; color: var(--gold); font-weight: 700; margin-top: 2px; }
+
+/* ── Info prendas ── */
+.desc-prendas-info { margin-top: 6px; font-size: 11px; color: var(--text-secondary); }
+
+/* ===== Botón "Info" en la columna de acciones ===== */
+.tbl-btn.info {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  width: auto;
+  padding: 0 10px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #3b82f6;
+  background: rgba(59, 130, 246, 0.1);
+}
+
+.tbl-btn.info:hover {
+  background: rgba(59, 130, 246, 0.18);
+}
+
+/* ===== Modal de información del descuento ===== */
+.desc-info-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding-bottom: 16px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.desc-info-codigo {
+  font-size: 14px;
+  padding: 6px 12px;
+}
+
+.desc-info-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.desc-info-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.desc-info-item:last-child {
+  border-bottom: none;
+}
+
+.desc-info-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--text-secondary, #64748b);
+  white-space: nowrap;
+}
+
+.desc-info-valor {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  text-align: right;
+  word-break: break-word;
+}

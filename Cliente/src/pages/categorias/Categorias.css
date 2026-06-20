@@ -1,0 +1,266 @@
+/* ══════════════════════════════════════════
+   Categorias.css — Estilos del módulo Categorías
+   ══════════════════════════════════════════ */
+
+/* ── Cabecera de tabla ── */
+.cat-tabla-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 18px;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.cat-tabla-titulo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--text);
+}
+
+.cat-tabla-count-badge {
+  background: var(--gold);
+  color: #fff;
+  padding: 2px 9px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+  margin-left: 4px;
+}
+
+.cat-tabla-filtros {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+/* ===== Dropdown personalizado (filtro de estado) ===== */
+.cat-dropdown {
+  position: relative;
+}
+
+.form-group .cat-dropdown {
+  width: 100%;
+}
+
+.cat-dropdown-btn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-width: 160px;
+  padding: 9px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  box-sizing: border-box;
+}
+
+.form-group .cat-dropdown-btn {
+  width: 100%;
+  min-width: 0;
+}
+
+.cat-dropdown-btn:hover {
+  border-color: var(--gold);
+}
+
+.cat-dropdown-btn.open {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 3px rgba(201, 150, 42, 0.15);
+}
+
+.cat-dropdown-chevron {
+  font-size: 11px;
+  color: var(--text-secondary, #64748b);
+  transition: transform 0.15s;
+}
+
+.cat-dropdown-btn.open .cat-dropdown-chevron {
+  transform: rotate(180deg);
+  color: var(--gold);
+}
+
+.cat-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  z-index: 30;
+  list-style: none;
+  margin: 0;
+  padding: 6px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12);
+  overflow: hidden;
+  animation: cat-dropdown-fade 0.12s ease-out;
+}
+
+@keyframes cat-dropdown-fade {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.cat-dropdown-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 9px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  color: var(--text);
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s;
+}
+
+.cat-dropdown-item:hover {
+  background: rgba(201, 150, 42, 0.12);
+  color: var(--gold);
+}
+
+.cat-dropdown-item.active {
+  background: var(--gold);
+  color: #fff;
+  font-weight: 600;
+}
+
+.cat-dropdown-item.active:hover {
+  background: var(--gold);
+  color: #fff;
+}
+
+.cat-dropdown-check {
+  font-size: 12px;
+}
+
+/* ── Celdas de tabla ── */
+.cat-td-numero {
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+.cat-td-nombre {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.cat-icono {
+  width: 36px;
+  min-width: 36px;
+  max-width: 36px;
+  height: 36px;
+  min-height: 36px;
+  max-height: 36px;
+  border-radius: 8px;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 14px;
+  flex-shrink: 0;
+  flex-grow: 0;
+  box-sizing: border-box;
+}
+
+.cat-nombre-text {
+  font-size: 14px;
+}
+
+.cat-td-descripcion {
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+/* ── Badge de estado ── */
+.cat-estado-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.cat-estado-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* ── Paginación ── */
+.cat-paginacion {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  margin-top: 18px;
+}
+
+.cat-paginacion-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.cat-paginacion-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+.cat-paginacion-page {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--text);
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.cat-paginacion-page.active {
+  background: var(--accent);
+  color: white;
+}
+
+/* ══════════════════════════════════════════
+   MODAL CREAR / EDITAR CATEGORÍA
+   ══════════════════════════════════════════ */
+
+.cat-textarea {
+  resize: vertical;
+}
+
+.cat-field-error {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 5px;
+  font-size: 12px;
+  color: var(--gold);
+  font-weight: 500;
+}

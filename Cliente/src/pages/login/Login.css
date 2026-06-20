@@ -1,0 +1,28 @@
+/* ══════════════════════════════════════════
+   Login.css — Estilos del módulo Login
+   ══════════════════════════════════════════ */
+
+.login-theme-btn {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 100;
+}
+
+.login-forgot-row {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 20px;
+}
+
+.login-forgot-link {
+  font-size: 13px;
+}
+
+.login-general-error {
+  margin-top: 12px;
+}
+
+.login-pwd-input {
+  padding-right: 46px;
+}

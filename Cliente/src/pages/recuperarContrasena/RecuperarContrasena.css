@@ -1,0 +1,13 @@
+/* ══════════════════════════════════════════
+   RecuperarContrasena.css
+   ══════════════════════════════════════════ */
+
+.rec-theme-btn       { position: fixed; top: 20px; right: 20px; z-index: 100; }
+.rec-back-link       { display: flex; margin-top: 14px; }
+.rec-email-highlight { color: var(--gold); }
+.rec-code-error      { justify-content: center; margin-top: 8px; }
+.rec-timer-text      { color: var(--text-secondary); margin-left: 6px; }
+.rec-pwd-input       { padding-right: 46px; }
+.rec-pwd-reqs        { margin-top: 8px; }
+.rec-submit-btn      { margin-top: 8px; }
+.rec-reenvio-wrap { text-align: center; margin-bottom: 12px; font-size: 13px; }

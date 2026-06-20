@@ -1,0 +1,525 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+/* ═══════════════════════════════════════
+   VARIABLES
+   ═══════════════════════════════════════ */
+.ta-root {
+  --gold:        #C8920A;
+  --gold-light:  #E2A820;
+  --gold-bright: #F0BC3A;
+  --gold-dark:   #9A6E08;
+  --black:       #111111;
+  --gray-light:  #f6f5f3;
+  --gray-mid:    #e8e6e1;
+  --error:       #C8920A;
+
+  position: fixed;
+  inset: 0;
+  z-index: 9000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  font-family: 'Inter', system-ui, sans-serif;
+}
+
+.ta-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.65);
+  backdrop-filter: blur(4px);
+}
+
+/* ═══════════════════════════════════════
+   CONTAINER (dos columnas)
+   ═══════════════════════════════════════ */
+.ta-container {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  width: 100%;
+  max-width: 860px;
+  max-height: 95vh;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 32px 80px rgba(0,0,0,0.4);
+  animation: taSlideIn 0.28s cubic-bezier(0.34,1.56,0.64,1);
+}
+@keyframes taSlideIn {
+  from { opacity:0; transform: scale(0.94) translateY(16px); }
+  to   { opacity:1; transform: scale(1)    translateY(0); }
+}
+
+/* ═══════════════════════════════════════
+   PANEL IZQUIERDO DECORATIVO
+   ═══════════════════════════════════════ */
+.ta-deco {
+  width: 340px;
+  flex-shrink: 0;
+  background: #1a0a00;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 32px;
+}
+
+/* Capas doradas animadas — mismo efecto del hero */
+.ta-deco-wave1 {
+  position: absolute; inset: 0;
+  background: linear-gradient(125deg,#0a0400 0%,#1a0a00 18%,#3a1c00 32%,#6a4a02 48%,#8a6008 58%,#9a7010 65%,#6a4a02 75%,#2a1200 88%,#0a0400 100%);
+  opacity: 1;
+}
+.ta-deco-wave2 {
+  position: absolute; inset: 0;
+  background: linear-gradient(115deg,transparent 0%,transparent 28%,rgba(240,190,50,0.5) 38%,rgba(255,220,80,0.65) 44%,rgba(240,190,50,0.5) 50%,transparent 60%,transparent 100%);
+  animation: taWave2 6s ease-in-out infinite alternate;
+}
+@keyframes taWave2 {
+  0%   { transform: translateX(-8%) skewX(-8deg); }
+  100% { transform: translateX(4%)  skewX(-8deg); }
+}
+.ta-deco-wave3 {
+  position: absolute; inset: 0;
+  background: linear-gradient(120deg,rgba(5,2,0,0.75) 0%,rgba(10,4,0,0.5) 20%,transparent 40%,transparent 65%,rgba(4,1,0,0.7) 100%);
+}
+
+.ta-deco-inner {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  color: #fff;
+}
+
+.ta-deco-logo {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: 3px;
+  background: linear-gradient(135deg, #fff5cc, #ffe066, #fff5cc);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  filter: drop-shadow(0 2px 6px rgba(0,0,0,0.8));
+  margin-bottom: 32px;
+  display: block;
+}
+
+.ta-deco-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 28px;
+  font-weight: 700;
+  color: #fff;
+  line-height: 1.15;
+  margin-bottom: 14px;
+  text-shadow: 0 2px 12px rgba(0,0,0,0.4);
+}
+
+.ta-deco-sub {
+  font-size: 13px;
+  color: rgba(255,240,200,0.75);
+  line-height: 1.7;
+  margin-bottom: 36px;
+}
+
+.ta-deco-features {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: flex-start;
+  text-align: left;
+}
+
+.ta-deco-feat {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  color: rgba(255,240,200,0.85);
+  font-weight: 500;
+}
+.ta-deco-feat i {
+  color: var(--gold-bright);
+  font-size: 16px;
+  width: 20px;
+}
+
+/* ═══════════════════════════════════════
+   PANEL DERECHO — FORMULARIO
+   ═══════════════════════════════════════ */
+.ta-form-side {
+  flex: 1;
+  background: #fff;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.ta-form-scroll {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.ta-close-btn {
+  position: absolute;
+  top: 14px; right: 14px;
+  z-index: 10;
+  width: 34px; height: 34px;
+  border-radius: 8px;
+  border: 1px solid var(--gray-mid);
+  background: var(--gray-light);
+  color: #555;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; font-size: 13px;
+  transition: all 0.15s;
+}
+.ta-close-btn:hover { background: #111; color: #fff; border-color: #111; }
+
+/* ═══════════════════════════════════════
+   PANEL (formulario interno)
+   ═══════════════════════════════════════ */
+.ta-panel {
+  padding: 40px 36px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+.ta-panel.ta-center {
+  align-items: center;
+  text-align: center;
+  justify-content: center;
+}
+
+.ta-logo {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 3px;
+  background: linear-gradient(135deg, var(--gold-dark), var(--gold-bright), var(--gold));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 24px;
+  display: block;
+}
+
+.ta-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--black);
+  margin-bottom: 6px;
+  line-height: 1.2;
+}
+
+.ta-subtitle {
+  font-size: 13px;
+  color: #888;
+  margin-bottom: 24px;
+  line-height: 1.6;
+}
+
+/* ═══════════════════════════════════════
+   FORM ELEMENTS
+   ═══════════════════════════════════════ */
+.ta-form-group {
+  margin-bottom: 16px;
+}
+
+.ta-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.ta-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: #444;
+  margin-bottom: 6px;
+  letter-spacing: 0.3px;
+}
+
+.ta-req { color: var(--gold); }
+
+.ta-input {
+  width: 100%;
+  padding: 11px 14px;
+  border: 1.5px solid var(--gray-mid);
+  border-radius: 10px;
+  background: var(--gray-light);
+  color: var(--black);
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.18s, box-shadow 0.18s, background 0.18s;
+}
+.ta-input:focus {
+  border-color: var(--gold);
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(200,146,10,0.12);
+}
+.ta-input.error {
+  border-color: var(--error);
+  box-shadow: 0 0 0 2px rgba(200,146,10,0.15);
+}
+.ta-input::placeholder { color: #bbb; }
+
+.ta-pass-wrap {
+  position: relative;
+}
+.ta-pass-wrap .ta-input {
+  padding-right: 44px;
+}
+.ta-pass-toggle {
+  position: absolute;
+  right: 12px; top: 50%;
+  transform: translateY(-50%);
+  background: none; border: none;
+  color: #aaa; cursor: pointer; font-size: 16px;
+  transition: color 0.15s;
+}
+.ta-pass-toggle:hover { color: var(--gold); }
+
+.ta-field-error {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 5px;
+  font-size: 11.5px;
+  color: var(--error);
+  font-weight: 500;
+}
+
+.ta-server-error {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  background: rgba(200,146,10,0.08);
+  border: 1px solid rgba(200,146,10,0.3);
+  border-radius: 8px;
+  color: var(--gold-dark);
+  font-size: 13px;
+  font-weight: 500;
+  margin-bottom: 16px;
+}
+
+/* ═══════════════════════════════════════
+   BUTTONS
+   ═══════════════════════════════════════ */
+.ta-btn-primary {
+  width: 100%;
+  padding: 13px;
+  border-radius: 10px;
+  border: none;
+  background: linear-gradient(135deg, var(--gold-dark) 0%, var(--gold) 50%, var(--gold-light) 100%);
+  color: #fff;
+  font-family: 'Inter', sans-serif;
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: all 0.22s;
+  box-shadow: 0 4px 16px rgba(200,146,10,0.30);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+.ta-btn-primary:hover:not(:disabled) {
+  background: var(--black);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+  transform: translateY(-1px);
+}
+.ta-btn-primary:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.ta-btn-secondary {
+  width: 100%;
+  padding: 12px;
+  border-radius: 10px;
+  border: 1.5px solid var(--gray-mid);
+  background: #fff;
+  color: #555;
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+  font-size: 13.5px;
+  cursor: pointer;
+  transition: all 0.18s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  text-decoration: none;
+  margin-top: 10px;
+}
+.ta-btn-secondary:hover {
+  border-color: var(--black);
+  color: var(--black);
+  background: var(--gray-light);
+}
+
+.ta-btn-ghost {
+  width: 100%;
+  padding: 10px;
+  border-radius: 10px;
+  border: none;
+  background: none;
+  color: #888;
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 10px;
+  transition: color 0.15s;
+}
+.ta-btn-ghost:hover { color: var(--black); }
+
+/* ═══════════════════════════════════════
+   LINKS Y EXTRAS
+   ═══════════════════════════════════════ */
+.ta-forgot-row {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 8px;
+  margin-top: -6px;
+}
+
+.ta-link {
+  background: none;
+  border: none;
+  color: var(--gold-dark);
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  cursor: pointer;
+  padding: 0;
+  transition: color 0.15s;
+}
+.ta-link:hover { color: var(--gold); text-decoration: underline; }
+.ta-link.bold { font-weight: 600; }
+.ta-link:disabled { color: #aaa; cursor: not-allowed; text-decoration: none; }
+
+.ta-switch-text {
+  text-align: center;
+  font-size: 13px;
+  color: #888;
+  margin-top: 14px;
+}
+
+.ta-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 16px 0 4px;
+  color: #ccc;
+  font-size: 12px;
+}
+.ta-divider::before,
+.ta-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--gray-mid);
+}
+
+/* ═══════════════════════════════════════
+   CÓDIGO DE VERIFICACIÓN
+   ═══════════════════════════════════════ */
+.ta-code-row {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin: 20px 0 4px;
+}
+.ta-code-input {
+  width: 46px; height: 54px;
+  text-align: center;
+  font-size: 1.4rem;
+  font-weight: 700;
+  border: 1.5px solid var(--gray-mid);
+  border-radius: 10px;
+  background: var(--gray-light);
+  color: var(--black);
+  outline: none;
+  font-family: 'Inter', sans-serif;
+  transition: border-color 0.18s, box-shadow 0.18s;
+}
+.ta-code-input:focus {
+  border-color: var(--gold);
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(200,146,10,0.12);
+}
+
+.ta-resend-msg {
+  text-align: center;
+  font-size: 12px;
+  color: #10b981;
+  margin-top: 8px;
+}
+
+/* ═══════════════════════════════════════
+   ÍCONOS ESPECIALES
+   ═══════════════════════════════════════ */
+.ta-verify-icon,
+.ta-step-icon {
+  width: 64px; height: 64px;
+  border-radius: 50%;
+  background: rgba(200,146,10,0.12);
+  border: 2px solid rgba(200,146,10,0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  color: var(--gold);
+  margin: 0 auto 16px;
+}
+
+.ta-success-icon {
+  width: 72px; height: 72px;
+  border-radius: 50%;
+  background: rgba(16,185,129,0.12);
+  border: 2px solid rgba(16,185,129,0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+  color: #10b981;
+  margin: 0 auto 20px;
+}
+
+/* ═══════════════════════════════════════
+   SPINNER
+   ═══════════════════════════════════════ */
+.ta-spinner {
+  width: 18px; height: 18px;
+  border: 2px solid rgba(255,255,255,0.4);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: taSpin 0.7s linear infinite;
+  display: inline-block;
+}
+@keyframes taSpin { to { transform: rotate(360deg); } }
+
+/* ═══════════════════════════════════════
+   RESPONSIVE
+   ═══════════════════════════════════════ */
+@media (max-width: 680px) {
+  .ta-deco { display: none; }
+  .ta-container { max-width: 440px; border-radius: 16px; }
+  .ta-panel { padding: 32px 24px; }
+  .ta-grid-2 { grid-template-columns: 1fr; }
+  .ta-code-input { width: 40px; height: 48px; font-size: 1.2rem; }
+}
