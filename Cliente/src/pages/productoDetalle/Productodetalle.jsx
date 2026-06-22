@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import '../tienda/Tienda.css'
-import './ProductoDetalle.css'
+import './Productodetalle.css'
 import TiendaAuth from '../tiendaAuht/TiendaAuth'
 
 const TALLAS_ORDEN = ['XS','S','M','L','XL','XXL','35','36','37','38','39','40','41','42','43','One Size']

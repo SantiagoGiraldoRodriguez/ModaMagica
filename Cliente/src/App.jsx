@@ -13,7 +13,7 @@ import MiPerfil from './pages/miPerfil/MiPerfil'
 import Tienda from './pages/tienda/Tienda'
 import TiendaPerfil from './pages/tiendaPerfil/Tiendaperfil'
 import Checkout from './pages/checkout/Checkout'
-import ProductoDetalle from './pages/productoDetalle/ProductoDetalle'
+import ProductoDetalle from './pages/productoDetalle/Productodetalle'
 
 function RutaProtegida({ children }) {
   const sesion = sessionStorage.getItem('adminSesion')
