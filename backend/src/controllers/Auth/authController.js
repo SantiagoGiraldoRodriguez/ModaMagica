@@ -177,17 +177,14 @@ exports.register = async (req, res) => {
     return res.status(400).json({ errores });
 
   try {
-    const existe = await pool.query(
-      'SELECT id_usuario FROM usuario WHERE LOWER(correo) = LOWER($1)',
-      [correo.trim()]
-    );
+    const [existe, existeTelefono] = await Promise.all([
+      pool.query('SELECT id_usuario FROM usuario WHERE LOWER(correo) = LOWER($1)', [correo.trim()]),
+      pool.query('SELECT id_usuario FROM usuario WHERE telefono = $1', [telefono.trim()])
+    ]);
+
     if (existe.rows.length > 0)
       return res.status(409).json({ error: 'El correo ya está registrado.' });
 
-    const existeTelefono = await pool.query(
-      'SELECT id_usuario FROM usuario WHERE telefono = $1',
-      [telefono.trim()]
-    );
     if (existeTelefono.rows.length > 0)
       return res.status(409).json({ error: 'Ese teléfono ya está registrado con otra cuenta.' });
 
@@ -202,7 +199,7 @@ exports.register = async (req, res) => {
        RETURNING id_usuario`,
       [
         primer_nombre.trim(),
-        segundo_nombre ? segundo_nombre.trim() : null,
+        segundo_nombre  ? segundo_nombre.trim()  : null,
         primer_apellido.trim(),
         segundo_apellido ? segundo_apellido.trim() : null,
         correo.trim(), hash, telefono.trim(), direccion.trim(), fecha_nacimiento
@@ -211,16 +208,14 @@ exports.register = async (req, res) => {
 
     const nuevoId = result.rows[0].id_usuario;
 
-    // Enviar correo de bienvenida (no crítico)
-    try {
-      await enviarCorreo({
-        to: correo.trim(),
-        subject: '✦ Bienvenido a Moda Mágica',
-        html: codigoEmailHTML(primer_nombre.trim(), '', 'Tu cuenta ha sido creada exitosamente. ¡Ya puedes iniciar sesión!')
-      });
-    } catch (mailErr) {
+    // ── Correo de bienvenida: no bloquea la respuesta ─────────────────────
+    enviarCorreo({
+      to: correo.trim(),
+      subject: '✦ Bienvenido a Moda Mágica',
+      html: codigoEmailHTML(primer_nombre.trim(), '', 'Tu cuenta ha sido creada exitosamente. ¡Ya puedes iniciar sesión!')
+    }).catch(mailErr => {
       console.error('No se pudo enviar el correo de bienvenida:', mailErr.message);
-    }
+    });
 
     res.json({
       message: '¡Cuenta creada exitosamente! Ya puedes iniciar sesión 🎉',
