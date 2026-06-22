@@ -14,7 +14,7 @@ import Tienda from './pages/tienda/Tienda'
 import TiendaPerfil from './pages/tiendaPerfil/Tiendaperfil'
 import Checkout from './pages/checkout/Checkout'
 import ProductoDetalle from './pages/productoDetalle/Productodetalle'
-import PagoResultado from './pages/pagoResultado/PagoResultado'
+import PagoResultado from './pages/PagoResultado/pagoResultado'
 
 function RutaProtegida({ children }) {
   const sesion = sessionStorage.getItem('adminSesion')
