@@ -7,10 +7,13 @@ const { enviarCorreo, emailBase } = require('../../utils/correo');
 const dominioCorreoExiste = async correo => {
   try {
     const dominio = correo.trim().split('@')[1];
-    const registros = await dns.resolveMx(dominio);
+    const registros = await Promise.race([
+      dns.resolveMx(dominio),
+      new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 3000))
+    ]);
     return registros && registros.length > 0;
   } catch {
-    return false;
+    return true; // si hay timeout o error, dejar pasar
   }
 };
 
@@ -184,17 +187,17 @@ const create = async (req, res) => {
     }
 
     // ── REGLA 2: Verificar que el dominio del correo es real (MX) ─────────
-    const dominioValido = await dominioCorreoExiste(correo);
+    // Se ejecuta en paralelo con la verificación de correo duplicado para no bloquear
+    const [dominioValido, existeCorreo] = await Promise.all([
+      dominioCorreoExiste(correo),
+      pool.query('SELECT id_usuario FROM usuario WHERE LOWER(correo) = LOWER($1)', [correo.trim()])
+    ]);
+
     if (!dominioValido)
       return res.status(400).json({
         error: 'El correo ingresado no parece ser válido. Verifica que el dominio exista (ej: @gmail.com, @outlook.com).'
       });
 
-    // ── Correo duplicado ──────────────────────────────────────────────────
-    const existeCorreo = await pool.query(
-      'SELECT id_usuario FROM usuario WHERE LOWER(correo) = LOWER($1)',
-      [correo.trim()]
-    );
     if (existeCorreo.rows.length > 0)
       return res.status(400).json({ error: 'Ya existe un usuario con ese correo.' });
 
@@ -220,22 +223,19 @@ const create = async (req, res) => {
       ]
     );
 
-    // ── Enviar correo de bienvenida ────────────────────────────────────────
-    try {
-      await enviarCorreo({
-        to: correo.trim(),
-        subject: '✦ Bienvenido a Moda Mágica',
-        html: emailBase(`
-          <p>Hola <strong>${primer_nombre.trim()}</strong>,</p>
-          <p>Tu cuenta ha sido creada exitosamente en el panel de administración de Moda Mágica.</p>
-          <p><strong>Correo:</strong> ${correo.trim()}</p>
-          <p>Ya puedes iniciar sesión con las credenciales que te asignaron.</p>
-        `)
-      });
-    } catch (mailErr) {
-      // El correo de bienvenida es opcional, no falla la creación
+    // ── Enviar correo de bienvenida (no bloquea la respuesta) ─────────────
+    enviarCorreo({
+      to: correo.trim(),
+      subject: '✦ Bienvenido a Moda Mágica',
+      html: emailBase(`
+        <p>Hola <strong>${primer_nombre.trim()}</strong>,</p>
+        <p>Tu cuenta ha sido creada exitosamente en el panel de administración de Moda Mágica.</p>
+        <p><strong>Correo:</strong> ${correo.trim()}</p>
+        <p>Ya puedes iniciar sesión con las credenciales que te asignaron.</p>
+      `)
+    }).catch(mailErr => {
       console.error('Error enviando correo de bienvenida:', mailErr.message);
-    }
+    });
 
     res.status(201).json(result.rows[0]);
   } catch (err) {
