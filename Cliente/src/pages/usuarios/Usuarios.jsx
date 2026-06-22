@@ -156,7 +156,6 @@ export default function Usuarios() {
     } catch (err) { console.log(err) }
   }
 
-  // Verifica si ya existe un superadmin en la lista cargada
   const yaTieneSuperadmin = usuarios.some(u => u.id_rol === 1)
 
   useEffect(() => { cargar() }, [])
@@ -210,6 +209,7 @@ export default function Usuarios() {
     return Object.values(e).every(v => v === '')
   }
 
+  // ── FIX: cerrar modal primero, luego recargar ──
   const save = async () => {
     setServerError('')
     if (!validarTodo()) return
@@ -224,7 +224,8 @@ export default function Usuarios() {
         setServerError(data?.error || 'Ocurrió un error al guardar.')
         return
       }
-      await cargar(); setModal(false)
+      setModal(false)   // primero cerrar
+      await cargar()    // luego recargar
     } catch (err) { setServerError('Ocurrió un error al guardar.'); console.log(err) }
   }
 
@@ -385,7 +386,6 @@ export default function Usuarios() {
                   onChange={v => { setForm({...form, id_rol: v}); setErrors(er=>({...er, id_rol: validarRol(v)})) }}
                   options={[
                     { value: '', label: 'Seleccionar...' },
-                    // Ocultar Superadmin si ya existe uno y el usuario que se edita no es ya superadmin
                     ...((!yaTieneSuperadmin || form.id_rol === 1 || form.id_rol === '1')
                       ? [{ value: '1', label: 'Superadmin' }]
                       : []
