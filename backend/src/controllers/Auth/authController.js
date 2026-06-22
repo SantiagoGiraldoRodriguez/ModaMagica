@@ -92,7 +92,7 @@ exports.loginCliente = async (req, res) => {
     const usuario = result.rows[0];
 
     if (usuario.estado === 'inactivo')
-      return res.status(403).json({ error: 'Tu cuenta no está verificada. Revisa tu correo.' });
+      return res.status(403).json({ error: 'Tu cuenta está inactiva. Contacta al administrador.' });
 
     if (usuario.id_rol !== 3)
       return res.status(403).json({ error: 'Este acceso es solo para clientes.' });
@@ -108,17 +108,17 @@ exports.loginCliente = async (req, res) => {
     );
 
     res.json({
-      message:  'Bienvenido a Moda Mágica ✦',
+      message:          'Bienvenido a Moda Mágica ✦',
       token,
-      id:       usuario.id_usuario,
-      nombre:   usuario.primer_nombre,
+      id:               usuario.id_usuario,
+      nombre:           usuario.primer_nombre,
       segundo_nombre:   usuario.segundo_nombre   || '',
-      apellido: usuario.primer_apellido || '',
+      apellido:         usuario.primer_apellido  || '',
       segundo_apellido: usuario.segundo_apellido || '',
-      correo:   usuario.correo,
-      telefono: usuario.telefono        || '',
-      direccion: usuario.direccion      || '',
-      estado:   usuario.estado,
+      correo:           usuario.correo,
+      telefono:         usuario.telefono         || '',
+      direccion:        usuario.direccion        || '',
+      estado:           usuario.estado,
     });
 
   } catch (error) {
@@ -127,10 +127,7 @@ exports.loginCliente = async (req, res) => {
   }
 };
 
-// ─── REGISTRO (tienda) ─────────────────────────────────────────────────────
-// Pide los mismos campos que el panel admin: primer/segundo nombre,
-// primer/segundo apellido, correo, teléfono, dirección, fecha de nacimiento
-// y contraseña. Valida que el usuario sea mayor de edad.
+// ─── REGISTRO (tienda) ────────────────────────────────────────────────────────
 exports.register = async (req, res) => {
   const {
     primer_nombre, segundo_nombre, primer_apellido, segundo_apellido,
@@ -195,44 +192,38 @@ exports.register = async (req, res) => {
       return res.status(409).json({ error: 'Ese teléfono ya está registrado con otra cuenta.' });
 
     const hash = await bcrypt.hash(contrasena, 10);
-    const codigoVerificacion = Math.floor(100000 + Math.random() * 900000).toString();
 
     const result = await pool.query(
       `INSERT INTO usuario
         (primer_nombre, segundo_nombre, primer_apellido, segundo_apellido,
          correo, contrasena, telefono, direccion, fecha_nacimiento,
          id_rol, estado, verify_code)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9, 3, 'inactivo', $10)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9, 3, 'activo', NULL)
        RETURNING id_usuario`,
       [
         primer_nombre.trim(),
         segundo_nombre ? segundo_nombre.trim() : null,
         primer_apellido.trim(),
         segundo_apellido ? segundo_apellido.trim() : null,
-        correo.trim(), hash, telefono.trim(), direccion.trim(), fecha_nacimiento,
-        codigoVerificacion
+        correo.trim(), hash, telefono.trim(), direccion.trim(), fecha_nacimiento
       ]
     );
 
     const nuevoId = result.rows[0].id_usuario;
 
+    // Enviar correo de bienvenida (no crítico)
     try {
       await enviarCorreo({
         to: correo.trim(),
-        subject: '✦ Código de verificación - Moda Mágica',
-        html: codigoEmailHTML(primer_nombre.trim(), codigoVerificacion, 'Tu código de verificación es:')
+        subject: '✦ Bienvenido a Moda Mágica',
+        html: codigoEmailHTML(primer_nombre.trim(), '', 'Tu cuenta ha sido creada exitosamente. ¡Ya puedes iniciar sesión!')
       });
     } catch (mailErr) {
-      console.error('No se pudo enviar el correo de verificación:', mailErr.message);
-      // El usuario ya quedó creado; informamos pero no revertimos el registro.
-      return res.json({
-        message: 'Usuario registrado, pero no se pudo enviar el correo de verificación. Usa "Reenviar código" en unos segundos.',
-        userId: nuevoId
-      });
+      console.error('No se pudo enviar el correo de bienvenida:', mailErr.message);
     }
 
     res.json({
-      message: 'Usuario registrado. Revisa tu correo 📧',
+      message: '¡Cuenta creada exitosamente! Ya puedes iniciar sesión 🎉',
       userId: nuevoId
     });
 
