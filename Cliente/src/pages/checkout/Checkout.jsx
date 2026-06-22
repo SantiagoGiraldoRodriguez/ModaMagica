@@ -10,7 +10,6 @@ export default function Checkout() {
   const navigate = useNavigate()
   const [carrito, setCarrito]       = useState([])
   const [cargado, setCargado]       = useState(false)
-  const [confirmado, setConfirmado] = useState(false)
   const [sesion, setSesion]         = useState(null)
   const [modalDatos, setModalDatos] = useState(false)
   const [loadingConfirm, setLoadingConfirm] = useState(false)
@@ -18,7 +17,6 @@ export default function Checkout() {
 
   // ── Carga inicial ──────────────────────────────────────────────────────────
   useEffect(() => {
-    // Carrito desde localStorage
     try {
       const guardado = localStorage.getItem('mm_carrito')
       setCarrito(guardado ? JSON.parse(guardado) : [])
@@ -28,19 +26,14 @@ export default function Checkout() {
       setCargado(true)
     }
 
-    // Sesión del cliente
     try {
       const raw = sessionStorage.getItem('tiendaSesion')
-      if (raw) {
-        const data = JSON.parse(raw)
-        setSesion(data)
-      }
+      if (raw) setSesion(JSON.parse(raw))
     } catch {
       setSesion(null)
     }
   }, [])
 
-  // Redirigir al login si no hay sesión una vez que cargó
   useEffect(() => {
     if (!cargado) return
     if (!sessionStorage.getItem('tiendaSesion')) {
@@ -48,7 +41,6 @@ export default function Checkout() {
     }
   }, [cargado, navigate])
 
-  // Sincroniza cambios del carrito a localStorage
   useEffect(() => {
     if (!cargado) return
     localStorage.setItem('mm_carrito', JSON.stringify(carrito))
@@ -75,7 +67,7 @@ export default function Checkout() {
 
   const tieneDireccion = Boolean(sesion?.direccion && sesion.direccion.trim())
 
-  // ── Confirmar compra real en el backend ────────────────────────────────────
+  // ── Confirmar compra + redirigir a Mercado Pago ───────────────────────────
   const handleConfirmarCompra = async () => {
     if (!tieneDireccion) {
       setErrorConfirm('Registra una dirección en tu perfil antes de continuar.')
@@ -84,31 +76,25 @@ export default function Checkout() {
     setLoadingConfirm(true)
     setErrorConfirm('')
     try {
-      // Construir los items en el formato que espera el backend
-      // Necesitamos id_producto_color e id_talla — los guardamos en el carrito
       const items = carrito.map(i => ({
         id_producto_color: i.id_producto_color,
         id_talla:          i.id_talla,
         cantidad:          i.cantidad,
       }))
 
+      // 1. Crear el pedido
       const res = await fetch(`${API_BASE}/api/pedidos`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          id_cliente: sesion.id,
-          items,
-        }),
+        body: JSON.stringify({ id_cliente: sesion.id, items }),
       })
-
       const data = await res.json()
       if (!res.ok) {
         setErrorConfirm(data.error || 'Ocurrió un error al crear el pedido.')
         return
       }
 
-      // Éxito: liberar las reservas temporales (el stock real ya se
-      // descontó de verdad), limpiar carrito y mostrar confirmación
+      // 2. Liberar reservas temporales
       try {
         const sessionId = localStorage.getItem('mm_session_id')
         if (sessionId) {
@@ -118,14 +104,23 @@ export default function Checkout() {
             body: JSON.stringify({ session_id: sessionId })
           })
         }
-      } catch {
-        // No crítico: las reservas igual expiran solas a los 15 min
+      } catch { /* no crítico */ }
+
+      // 3. Crear preferencia de Mercado Pago
+      const mpRes = await fetch(`${API_BASE}/api/pagos/crear-preferencia`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id_pedido: data.id_pedido }),
+      })
+      const mpData = await mpRes.json()
+      if (!mpRes.ok) {
+        setErrorConfirm(mpData.error || 'Error al iniciar el pago.')
+        return
       }
 
-      localStorage.removeItem('mm_carrito')
-      setCarrito([])
-      setModalDatos(false)
-      setConfirmado(true)
+      // 4. Redirigir a Mercado Pago
+      window.location.href = mpData.init_point
+
     } catch {
       setErrorConfirm('No se pudo conectar con el servidor.')
     } finally {
@@ -133,25 +128,12 @@ export default function Checkout() {
     }
   }
 
-  // ── Estados de carga / vacío / confirmado ─────────────────────────────────
+  // ── Estados de carga / vacío ───────────────────────────────────────────────
   if (!cargado) return (
     <div className="ck-root">
       <div className="ck-state">
         <i className="bi bi-hourglass-split ck-spin"></i>
         <p>Cargando tu pedido...</p>
-      </div>
-    </div>
-  )
-
-  if (confirmado) return (
-    <div className="ck-root">
-      <div className="ck-success">
-        <div className="ck-success-icon"><i className="bi bi-check-circle-fill"></i></div>
-        <h2>¡Compra confirmada!</h2>
-        <p>Te contactaremos por WhatsApp para coordinar el pago y el envío.</p>
-        <button className="ck-btn-primary" onClick={() => navigate('/tienda')}>
-          Volver a la tienda
-        </button>
       </div>
     </div>
   )
@@ -261,7 +243,7 @@ export default function Checkout() {
 
             <p className="ck-summary-note">
               <i className="bi bi-shield-check"></i>
-              Compra segura · Te contactaremos por WhatsApp para coordinar el pago
+              Pago seguro con Mercado Pago
             </p>
           </div>
         </div>
@@ -355,7 +337,7 @@ export default function Checkout() {
               >
                 {loadingConfirm
                   ? <><i className="bi bi-hourglass-split"></i> Procesando...</>
-                  : <><i className="bi bi-check-lg"></i> Confirmar pedido</>
+                  : <><i className="bi bi-credit-card"></i> Pagar con Mercado Pago</>
                 }
               </button>
             </div>

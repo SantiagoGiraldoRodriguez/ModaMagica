@@ -14,6 +14,7 @@ import Tienda from './pages/tienda/Tienda'
 import TiendaPerfil from './pages/tiendaPerfil/Tiendaperfil'
 import Checkout from './pages/checkout/Checkout'
 import ProductoDetalle from './pages/productoDetalle/Productodetalle'
+import PagoResultado from './pages/pagoResultado/PagoResultado'
 
 function RutaProtegida({ children }) {
   const sesion = sessionStorage.getItem('adminSesion')
@@ -64,9 +65,10 @@ export default function App() {
           <Route path="descuentos" element={wrapSuperadmin(Descuentos)} />
           <Route path="mi-perfil"  element={wrap(MiPerfil)} />
           <Route path="tienda"     element={<Tienda />} />
-          <Route path="tienda/perfil" element={<TiendaPerfil />} />
-          <Route path="tienda/checkout" element={<Checkout />} />
-          <Route path="tienda/producto/:id" element={<ProductoDetalle />} />
+          <Route path="tienda/perfil"        element={<TiendaPerfil />} />
+          <Route path="tienda/checkout"      element={<Checkout />} />
+          <Route path="tienda/producto/:id"  element={<ProductoDetalle />} />
+          <Route path="tienda/pago-resultado" element={<PagoResultado />} />
           <Route path="*"          element={<Navigate to="/login" replace />} />
         </Routes>
       </BrowserRouter>

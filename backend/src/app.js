@@ -40,13 +40,14 @@ app.use('/api/pedidos',     require('./routes/Pedidos/pedidos.routes'));
 // ─── Rutas de Reservas de Stock (carrito temporal) ────────
 app.use('/api/reservas',    require('./routes/Reservas/reservasRoutes'));
 
+// ─── Rutas de Pagos (Mercado Pago) ────────────────────────
+app.use('/api/pagos',       require('./routes/Pagos/pagos.routes'));
+
 // ─── Puerto y Arranque ────────────────────────────────────
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Servidor corriendo en el puerto ${PORT}`));
 
 // ─── Limpieza periódica de reservas de stock vencidas ─────
-// Corre cada minuto para liberar stock de carritos abandonados,
-// además de la limpieza que ya ocurre en cada operación relevante.
 const pool = require('./config/db');
 setInterval(async () => {
   try {
