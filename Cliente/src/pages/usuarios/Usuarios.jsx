@@ -145,6 +145,7 @@ export default function Usuarios() {
   const [form, setForm]               = useState(formVacio)
   const [errors, setErrors]           = useState(erroresVacio)
   const [serverError, setServerError] = useState('')
+  const [saving, setSaving]           = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
   const [confirm, setConfirm]         = useState({ show:false, id:null, error:'' })
   const [infoUsuario, setInfoUsuario] = useState(null)
@@ -209,24 +210,44 @@ export default function Usuarios() {
     return Object.values(e).every(v => v === '')
   }
 
-  // ── FIX: cerrar modal primero, luego recargar ──
   const save = async () => {
     setServerError('')
     if (!validarTodo()) return
+
+    setSaving(true)
     try {
       const url    = editando ? `${API}/${editando}` : API
       const method = editando ? 'PUT' : 'POST'
       const payload = { ...form, id_rol: parseInt(form.id_rol, 10) }
       if (editando && !payload.contrasena) delete payload.contrasena
-      const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
+
+      const res = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      })
+
+      const data = await res.json().catch(() => ({}))
+
       if (!res.ok) {
-        const data = await res.json().catch(() => ({}))
-        setServerError(data?.error || 'Ocurrió un error al guardar.')
+        if (data?.error) {
+          setServerError(data.error)
+        } else if (data?.errores) {
+          setServerError(Object.values(data.errores).join(' '))
+        } else {
+          setServerError(`Error ${res.status}: no se pudo guardar.`)
+        }
         return
       }
-      setModal(false)   // primero cerrar
-      await cargar()    // luego recargar
-    } catch (err) { setServerError('Ocurrió un error al guardar.'); console.log(err) }
+
+      await cargar()
+      setModal(false)
+    } catch (err) {
+      setServerError('Error de red: ' + err.message)
+      console.error(err)
+    } finally {
+      setSaving(false)
+    }
   }
 
   const eliminar = async id => {
@@ -412,8 +433,13 @@ export default function Usuarios() {
             </div>
 
             <div className="modal-actions">
-              <button className="btn-secondary" onClick={()=>setModal(false)}>Cancelar</button>
-              <button className="btn-primary" onClick={save}><i className="bi bi-check-lg"></i> {editando?'Actualizar':'Guardar'}</button>
+              <button className="btn-secondary" onClick={()=>setModal(false)} disabled={saving}>Cancelar</button>
+              <button className="btn-primary" onClick={save} disabled={saving}>
+                {saving
+                  ? <><i className="bi bi-hourglass-split"></i> Guardando...</>
+                  : <><i className="bi bi-check-lg"></i> {editando?'Actualizar':'Guardar'}</>
+                }
+              </button>
             </div>
           </div>
         </div>
