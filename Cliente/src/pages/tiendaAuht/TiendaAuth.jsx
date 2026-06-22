@@ -3,7 +3,6 @@ import './TiendaAuth.css'
 
 const API = `${import.meta.env.VITE_API_URL}/api/auth`
 
-// ─── Validaciones ─────────────────────────────────────────────
 const validarCorreo = v => {
   if (!v.trim()) return 'El correo es obligatorio.'
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) return 'Ingresa un correo válido.'
@@ -41,64 +40,23 @@ const validarFechaNacimiento = v => {
   return ''
 }
 
-// ─── Campo con error ───────────────────────────────────────────
 const FieldError = ({ msg }) => msg
   ? <p className="ta-field-error"><i className="bi bi-exclamation-circle"></i> {msg}</p>
   : null
-
-// ─── Inputs de código ─────────────────────────────────────────
-function CodeInputs({ value, onChange }) {
-  const digits = value.split('')
-  const handleKey = (e, i) => {
-    if (e.key === 'Backspace' && !digits[i] && i > 0) {
-      document.getElementById(`code-${i - 1}`)?.focus()
-    }
-  }
-  const handleChange = (e, i) => {
-    const val = e.target.value.replace(/\D/, '')
-    if (!val) {
-      const next = [...digits]
-      next[i] = ''
-      onChange(next.join(''))
-      return
-    }
-    const next = [...digits]
-    next[i] = val[val.length - 1]
-    onChange(next.join(''))
-    if (i < 5) document.getElementById(`code-${i + 1}`)?.focus()
-  }
-  return (
-    <div className="ta-code-row">
-      {[0,1,2,3,4,5].map(i => (
-        <input
-          key={i}
-          id={`code-${i}`}
-          className="ta-code-input"
-          type="text"
-          inputMode="numeric"
-          maxLength={1}
-          value={digits[i] || ''}
-          onChange={e => handleChange(e, i)}
-          onKeyDown={e => handleKey(e, i)}
-        />
-      ))}
-    </div>
-  )
-}
 
 // ═══════════════════════════════════════
 // PANEL LOGIN
 // ═══════════════════════════════════════
 function PanelLogin({ onSwitch, onSuccess }) {
-  const [form, setForm]       = useState({ correo: '', contrasena: '' })
-  const [errors, setErrors]   = useState({})
+  const [form, setForm]           = useState({ correo: '', contrasena: '' })
+  const [errors, setErrors]       = useState({})
   const [serverErr, setServerErr] = useState('')
-  const [loading, setLoading] = useState(false)
-  const [showPass, setShowPass] = useState(false)
+  const [loading, setLoading]     = useState(false)
+  const [showPass, setShowPass]   = useState(false)
 
   const validate = () => {
     const e = {
-      correo:    validarCorreo(form.correo),
+      correo:     validarCorreo(form.correo),
       contrasena: form.contrasena ? '' : 'La contraseña es obligatoria.'
     }
     setErrors(e)
@@ -143,7 +101,6 @@ function PanelLogin({ onSwitch, onSuccess }) {
         <input
           className={`ta-input ${errors.correo ? 'error' : ''}`}
           type="text"
-         
           value={form.correo}
           onChange={e => { setForm({...form, correo: e.target.value}); setErrors(er => ({...er, correo: validarCorreo(e.target.value)})) }}
           onBlur={() => setErrors(er => ({...er, correo: validarCorreo(form.correo)}))}
@@ -157,7 +114,6 @@ function PanelLogin({ onSwitch, onSuccess }) {
           <input
             className={`ta-input ${errors.contrasena ? 'error' : ''}`}
             type={showPass ? 'text' : 'password'}
-           
             value={form.contrasena}
             onChange={e => setForm({...form, contrasena: e.target.value})}
             onKeyDown={e => e.key === 'Enter' && submit()}
@@ -194,38 +150,32 @@ function PanelLogin({ onSwitch, onSuccess }) {
 // ═══════════════════════════════════════
 // PANEL REGISTRO
 // ═══════════════════════════════════════
-function PanelRegistro({ onSwitch, onVerify }) {
-  const [step, setStep]     = useState(1) // 1: datos, 2: verificar
-  const [userId, setUserId] = useState(null)
-  const [form, setForm]     = useState({
+function PanelRegistro({ onSwitch, onRegistrado }) {
+  const [form, setForm] = useState({
     primer_nombre: '', segundo_nombre: '', primer_apellido: '', segundo_apellido: '',
     correo: '', contrasena: '', confirmar: '',
     telefono: '', direccion: '', fecha_nacimiento: ''
   })
-  const [errors, setErrors]     = useState({})
+  const [errors, setErrors]       = useState({})
   const [serverErr, setServerErr] = useState('')
-  const [loading, setLoading]   = useState(false)
-  const [showPass, setShowPass] = useState(false)
-  const [showConf, setShowConf] = useState(false)
-  const [codigo, setCodigo]     = useState('')
-  const [codeErr, setCodeErr]   = useState('')
-  const [resendMsg, setResendMsg] = useState('')
-  const [resendTimer, setResendTimer] = useState(0)
+  const [loading, setLoading]     = useState(false)
+  const [showPass, setShowPass]   = useState(false)
+  const [showConf, setShowConf]   = useState(false)
 
   const set = (k, v) => setForm(f => ({...f, [k]: v}))
   const err = (k, v) => setErrors(e => ({...e, [k]: v}))
 
   const validarTodo = () => {
     const e = {
-      primer_nombre:  validarNombre(form.primer_nombre, 'El nombre'),
-      segundo_nombre: validarNombreOpcional(form.segundo_nombre, 'El segundo nombre'),
-      primer_apellido: validarNombre(form.primer_apellido, 'El apellido'),
+      primer_nombre:    validarNombre(form.primer_nombre, 'El nombre'),
+      segundo_nombre:   validarNombreOpcional(form.segundo_nombre, 'El segundo nombre'),
+      primer_apellido:  validarNombre(form.primer_apellido, 'El apellido'),
       segundo_apellido: validarNombreOpcional(form.segundo_apellido, 'El segundo apellido'),
-      correo:         validarCorreo(form.correo),
-      contrasena:     validarContrasena(form.contrasena),
-      confirmar:      form.confirmar !== form.contrasena ? 'Las contraseñas no coinciden.' : '',
-      telefono:       !form.telefono.trim() ? 'El teléfono es obligatorio.' : !/^\d{7,15}$/.test(form.telefono.trim()) ? 'Solo números, entre 7 y 15 dígitos.' : '',
-      direccion:      !form.direccion.trim() ? 'La dirección es obligatoria.' : '',
+      correo:           validarCorreo(form.correo),
+      contrasena:       validarContrasena(form.contrasena),
+      confirmar:        form.confirmar !== form.contrasena ? 'Las contraseñas no coinciden.' : '',
+      telefono:         !form.telefono.trim() ? 'El teléfono es obligatorio.' : !/^\d{7,15}$/.test(form.telefono.trim()) ? 'Solo números, entre 7 y 15 dígitos.' : '',
+      direccion:        !form.direccion.trim() ? 'La dirección es obligatoria.' : '',
       fecha_nacimiento: validarFechaNacimiento(form.fecha_nacimiento),
     }
     setErrors(e)
@@ -254,90 +204,14 @@ function PanelRegistro({ onSwitch, onVerify }) {
       })
       const data = await res.json()
       if (!res.ok) { setServerErr(data.error || 'Error al registrar.'); return }
-      setUserId(data.userId)
-      setStep(2)
-      startResendTimer()
+      // ✅ Registro exitoso → ir directo al login
+      onRegistrado()
     } catch {
       setServerErr('No se pudo conectar con el servidor.')
     } finally {
       setLoading(false)
     }
   }
-
-  const startResendTimer = () => {
-    setResendTimer(60)
-    const interval = setInterval(() => {
-      setResendTimer(t => {
-        if (t <= 1) { clearInterval(interval); return 0 }
-        return t - 1
-      })
-    }, 1000)
-  }
-
-  const verify = async () => {
-    setCodeErr('')
-    if (codigo.length < 6) { setCodeErr('Ingresa los 6 dígitos.'); return }
-    setLoading(true)
-    try {
-      const res  = await fetch(`${API}/verify`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId, codigo })
-      })
-      const data = await res.json()
-      if (!res.ok) { setCodeErr(data.error || 'Código incorrecto.'); return }
-      onVerify()
-    } catch {
-      setCodeErr('No se pudo conectar con el servidor.')
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const resend = async () => {
-    if (resendTimer > 0) return
-    setResendMsg('')
-    try {
-      await fetch(`${API}/resend-code`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId })
-      })
-      setResendMsg('Nuevo código enviado 📧')
-      startResendTimer()
-    } catch {
-      setResendMsg('Error al reenviar.')
-    }
-  }
-
-  if (step === 2) return (
-    <div className="ta-panel">
-      <div className="ta-logo">✦ MODA MÁGICA ✦</div>
-      <div className="ta-verify-icon"><i className="bi bi-envelope-check"></i></div>
-      <h2 className="ta-title">Verifica tu correo</h2>
-      <p className="ta-subtitle">Enviamos un código de 6 dígitos a<br/><strong>{form.correo}</strong></p>
-
-      <CodeInputs value={codigo} onChange={setCodigo} />
-      <FieldError msg={codeErr} />
-
-      {resendMsg && <p className="ta-resend-msg">{resendMsg}</p>}
-
-      <button className="ta-btn-primary" onClick={verify} disabled={loading} style={{marginTop: 20}}>
-        {loading ? <span className="ta-spinner"></span> : 'Verificar cuenta'}
-      </button>
-
-      <p className="ta-switch-text" style={{marginTop: 14}}>
-        ¿No recibiste el código?{' '}
-        <button className="ta-link bold" onClick={resend} disabled={resendTimer > 0}>
-          {resendTimer > 0 ? `Reenviar en ${resendTimer}s` : 'Reenviar'}
-        </button>
-      </p>
-
-      <button className="ta-btn-ghost" onClick={() => setStep(1)}>
-        <i className="bi bi-arrow-left"></i> Volver
-      </button>
-    </div>
-  )
 
   return (
     <div className="ta-panel">
@@ -472,20 +346,47 @@ function PanelRegistro({ onSwitch, onVerify }) {
 // ═══════════════════════════════════════
 // PANEL RECUPERAR CONTRASEÑA
 // ═══════════════════════════════════════
+function CodeInputs({ value, onChange }) {
+  const digits = value.split('')
+  const handleKey = (e, i) => {
+    if (e.key === 'Backspace' && !digits[i] && i > 0)
+      document.getElementById(`code-${i - 1}`)?.focus()
+  }
+  const handleChange = (e, i) => {
+    const val = e.target.value.replace(/\D/, '')
+    if (!val) {
+      const next = [...digits]; next[i] = ''; onChange(next.join('')); return
+    }
+    const next = [...digits]; next[i] = val[val.length - 1]; onChange(next.join(''))
+    if (i < 5) document.getElementById(`code-${i + 1}`)?.focus()
+  }
+  return (
+    <div className="ta-code-row">
+      {[0,1,2,3,4,5].map(i => (
+        <input key={i} id={`code-${i}`} className="ta-code-input"
+          type="text" inputMode="numeric" maxLength={1}
+          value={digits[i] || ''}
+          onChange={e => handleChange(e, i)}
+          onKeyDown={e => handleKey(e, i)} />
+      ))}
+    </div>
+  )
+}
+
 function PanelRecovery({ onSwitch }) {
-  const [step, setStep]         = useState(1) // 1: correo, 2: código, 3: nueva pass
-  const [correo, setCorreo]     = useState('')
+  const [step, setStep]           = useState(1)
+  const [correo, setCorreo]       = useState('')
   const [correoErr, setCorreoErr] = useState('')
-  const [userId, setUserId]     = useState(null)
-  const [codigo, setCodigo]     = useState('')
-  const [codeErr, setCodeErr]   = useState('')
-  const [pass, setPass]         = useState('')
-  const [conf, setConf]         = useState('')
-  const [passErr, setPassErr]   = useState('')
-  const [confErr, setConfErr]   = useState('')
+  const [userId, setUserId]       = useState(null)
+  const [codigo, setCodigo]       = useState('')
+  const [codeErr, setCodeErr]     = useState('')
+  const [pass, setPass]           = useState('')
+  const [conf, setConf]           = useState('')
+  const [passErr, setPassErr]     = useState('')
+  const [confErr, setConfErr]     = useState('')
   const [serverErr, setServerErr] = useState('')
-  const [loading, setLoading]   = useState(false)
-  const [showPass, setShowPass] = useState(false)
+  const [loading, setLoading]     = useState(false)
+  const [showPass, setShowPass]   = useState(false)
   const [resendTimer, setResendTimer] = useState(0)
 
   const startTimer = () => {
@@ -493,89 +394,68 @@ function PanelRecovery({ onSwitch }) {
     const iv = setInterval(() => setResendTimer(t => { if (t <= 1) { clearInterval(iv); return 0 } return t - 1 }), 1000)
   }
 
-  // Paso 1: enviar correo para obtener código
   const sendCode = async () => {
     const e = validarCorreo(correo)
     setCorreoErr(e)
     if (e) return
-    setLoading(true)
-    setServerErr('')
+    setLoading(true); setServerErr('')
     try {
       const res  = await fetch(`${API}/recovery-request`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ correo: correo.trim() })
       })
       const data = await res.json()
       if (!res.ok) { setServerErr(data.error || 'Error al enviar código.'); return }
-      setUserId(data.userId)
-      setStep(2)
-      startTimer()
-    } catch {
-      setServerErr('No se pudo conectar con el servidor.')
-    } finally {
-      setLoading(false)
-    }
+      setUserId(data.userId); setStep(2); startTimer()
+    } catch { setServerErr('No se pudo conectar con el servidor.') }
+    finally { setLoading(false) }
   }
 
-  // Paso 2: verificar código
   const verifyCode = async () => {
     setCodeErr('')
     if (codigo.length < 6) { setCodeErr('Ingresa los 6 dígitos.'); return }
     setLoading(true)
     try {
       const res  = await fetch(`${API}/recovery-verify`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId, codigo })
       })
       const data = await res.json()
       if (!res.ok) { setCodeErr(data.error || 'Código incorrecto.'); return }
       setStep(3)
-    } catch {
-      setCodeErr('No se pudo conectar con el servidor.')
-    } finally {
-      setLoading(false)
-    }
+    } catch { setCodeErr('No se pudo conectar con el servidor.') }
+    finally { setLoading(false) }
   }
 
-  // Paso 3: cambiar contraseña
   const changePass = async () => {
     const pe = validarContrasena(pass)
     const ce = pass !== conf ? 'Las contraseñas no coinciden.' : ''
     setPassErr(pe); setConfErr(ce)
     if (pe || ce) return
-    setLoading(true)
-    setServerErr('')
+    setLoading(true); setServerErr('')
     try {
       const res  = await fetch(`${API}/recovery-reset`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId, nuevaContrasena: pass })
       })
       const data = await res.json()
       if (!res.ok) { setServerErr(data.error || 'Error al cambiar contraseña.'); return }
       setStep(4)
-    } catch {
-      setServerErr('No se pudo conectar con el servidor.')
-    } finally {
-      setLoading(false)
-    }
+    } catch { setServerErr('No se pudo conectar con el servidor.') }
+    finally { setLoading(false) }
   }
 
   const resend = async () => {
     if (resendTimer > 0) return
     try {
       await fetch(`${API}/resend-code`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId })
       })
       startTimer()
     } catch {}
   }
 
-  // Paso 4: éxito
   if (step === 4) return (
     <div className="ta-panel ta-center">
       <div className="ta-logo">✦ MODA MÁGICA ✦</div>
@@ -586,22 +466,18 @@ function PanelRecovery({ onSwitch }) {
     </div>
   )
 
-  // Paso 3: nueva contraseña
   if (step === 3) return (
     <div className="ta-panel">
       <div className="ta-logo">✦ MODA MÁGICA ✦</div>
       <div className="ta-step-icon"><i className="bi bi-lock"></i></div>
       <h2 className="ta-title">Nueva contraseña</h2>
       <p className="ta-subtitle">Elige una contraseña segura para tu cuenta</p>
-
       {serverErr && <div className="ta-server-error"><i className="bi bi-exclamation-triangle"></i> {serverErr}</div>}
-
       <div className="ta-form-group">
         <label className="ta-label">Nueva contraseña</label>
         <div className="ta-pass-wrap">
           <input className={`ta-input ${passErr ? 'error' : ''}`}
-            type={showPass ? 'text' : 'password'}
-            value={pass}
+            type={showPass ? 'text' : 'password'} value={pass}
             onChange={e => { setPass(e.target.value); setPassErr(validarContrasena(e.target.value)) }} />
           <button className="ta-pass-toggle" onClick={() => setShowPass(v => !v)} type="button">
             <i className={`bi bi-eye${showPass ? '-slash' : ''}`}></i>
@@ -609,75 +485,59 @@ function PanelRecovery({ onSwitch }) {
         </div>
         <FieldError msg={passErr} />
       </div>
-
       <div className="ta-form-group">
         <label className="ta-label">Confirmar contraseña</label>
-        <input className={`ta-input ${confErr ? 'error' : ''}`}
-          type="password"
-          value={conf}
+        <input className={`ta-input ${confErr ? 'error' : ''}`} type="password" value={conf}
           onChange={e => { setConf(e.target.value); setConfErr(e.target.value !== pass ? 'Las contraseñas no coinciden.' : '') }} />
         <FieldError msg={confErr} />
       </div>
-
       <button className="ta-btn-primary" onClick={changePass} disabled={loading}>
         {loading ? <span className="ta-spinner"></span> : 'Guardar contraseña'}
       </button>
     </div>
   )
 
-  // Paso 2: código
   if (step === 2) return (
     <div className="ta-panel">
       <div className="ta-logo">✦ MODA MÁGICA ✦</div>
       <div className="ta-step-icon"><i className="bi bi-envelope"></i></div>
       <h2 className="ta-title">Revisa tu correo</h2>
       <p className="ta-subtitle">Enviamos un código a<br/><strong>{correo}</strong></p>
-
       <CodeInputs value={codigo} onChange={setCodigo} />
       <FieldError msg={codeErr} />
-
       <button className="ta-btn-primary" onClick={verifyCode} disabled={loading} style={{marginTop: 20}}>
         {loading ? <span className="ta-spinner"></span> : 'Verificar código'}
       </button>
-
       <p className="ta-switch-text">
         ¿No recibiste el código?{' '}
         <button className="ta-link bold" onClick={resend} disabled={resendTimer > 0}>
           {resendTimer > 0 ? `Reenviar en ${resendTimer}s` : 'Reenviar'}
         </button>
       </p>
-
       <button className="ta-btn-ghost" onClick={() => setStep(1)}>
         <i className="bi bi-arrow-left"></i> Volver
       </button>
     </div>
   )
 
-  // Paso 1: correo
   return (
     <div className="ta-panel">
       <div className="ta-logo">✦ MODA MÁGICA ✦</div>
       <div className="ta-step-icon"><i className="bi bi-key"></i></div>
       <h2 className="ta-title">¿Olvidaste tu contraseña?</h2>
       <p className="ta-subtitle">Ingresa tu correo y te enviaremos un código de verificación</p>
-
       {serverErr && <div className="ta-server-error"><i className="bi bi-exclamation-triangle"></i> {serverErr}</div>}
-
       <div className="ta-form-group">
         <label className="ta-label">Correo electrónico</label>
-        <input className={`ta-input ${correoErr ? 'error' : ''}`}
-          type="text"
-          value={correo}
+        <input className={`ta-input ${correoErr ? 'error' : ''}`} type="text" value={correo}
           onChange={e => { setCorreo(e.target.value); setCorreoErr(validarCorreo(e.target.value)) }}
           onBlur={() => setCorreoErr(validarCorreo(correo))}
           onKeyDown={e => e.key === 'Enter' && sendCode()} />
         <FieldError msg={correoErr} />
       </div>
-
       <button className="ta-btn-primary" onClick={sendCode} disabled={loading}>
         {loading ? <span className="ta-spinner"></span> : 'Enviar código'}
       </button>
-
       <button className="ta-btn-ghost" onClick={() => onSwitch('login')}>
         <i className="bi bi-arrow-left"></i> Volver al inicio de sesión
       </button>
@@ -690,7 +550,7 @@ function PanelRecovery({ onSwitch }) {
 // ═══════════════════════════════════════
 export default function TiendaAuth({ onClose, onLoginSuccess }) {
   const [panel, setPanel] = useState('login')
-  const [verified, setVerified] = useState(false)
+  const [registrado, setRegistrado] = useState(false)
 
   const handleSuccess = () => {
     if (onLoginSuccess) onLoginSuccess()
@@ -698,19 +558,40 @@ export default function TiendaAuth({ onClose, onLoginSuccess }) {
     else window.history.back()
   }
 
-  const handleVerified = () => setVerified(true)
+  const handleRegistrado = () => {
+    setRegistrado(true)
+    setPanel('login')
+  }
 
-  if (verified) return (
+  if (registrado && panel === 'login') return (
     <div className="ta-root">
       <div className="ta-backdrop" onClick={onClose} />
-      <div className="ta-panel ta-center">
-        <div className="ta-logo">✦ MODA MÁGICA ✦</div>
-        <div className="ta-success-icon"><i className="bi bi-check-circle-fill"></i></div>
-        <h2 className="ta-title">¡Cuenta verificada!</h2>
-        <p className="ta-subtitle">Tu cuenta está activa. Ya puedes iniciar sesión.</p>
-        <button className="ta-btn-primary" onClick={() => { setVerified(false); setPanel('login') }}>
-          Iniciar sesión
-        </button>
+      <div className="ta-container">
+        <div className="ta-deco">
+          <div className="ta-deco-inner">
+            <div className="ta-deco-logo">✦ MODA MÁGICA ✦</div>
+            <h3 className="ta-deco-title">Bienvenido de vuelta</h3>
+            <p className="ta-deco-sub">Accede a tu cuenta para disfrutar de la mejor moda.</p>
+            <div className="ta-deco-features">
+              <div className="ta-deco-feat"><i className="bi bi-shield-check"></i> Compra segura</div>
+              <div className="ta-deco-feat"><i className="bi bi-bag-heart"></i> Miles de productos</div>
+              <div className="ta-deco-feat"><i className="bi bi-headset"></i> Soporte 7/7</div>
+            </div>
+          </div>
+          <div className="ta-deco-wave1" /><div className="ta-deco-wave2" /><div className="ta-deco-wave3" />
+        </div>
+        <div className="ta-form-side">
+          {onClose && <button className="ta-close-btn" onClick={onClose}><i className="bi bi-x-lg"></i></button>}
+          <div className="ta-form-scroll">
+            <div className="ta-panel">
+              <div className="ta-logo">✦ MODA MÁGICA ✦</div>
+              <div className="ta-success-icon"><i className="bi bi-check-circle-fill"></i></div>
+              <h2 className="ta-title">¡Cuenta creada!</h2>
+              <p className="ta-subtitle">Tu cuenta está activa. Ya puedes iniciar sesión.</p>
+              <PanelLogin onSwitch={setPanel} onSuccess={handleSuccess} />
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   )
@@ -719,7 +600,6 @@ export default function TiendaAuth({ onClose, onLoginSuccess }) {
     <div className="ta-root">
       <div className="ta-backdrop" onClick={onClose} />
       <div className="ta-container">
-        {/* Panel izquierdo decorativo */}
         <div className="ta-deco">
           <div className="ta-deco-inner">
             <div className="ta-deco-logo">✦ MODA MÁGICA ✦</div>
@@ -739,22 +619,13 @@ export default function TiendaAuth({ onClose, onLoginSuccess }) {
               <div className="ta-deco-feat"><i className="bi bi-headset"></i> Soporte 7/7</div>
             </div>
           </div>
-          {/* Olas decorativas */}
-          <div className="ta-deco-wave1" />
-          <div className="ta-deco-wave2" />
-          <div className="ta-deco-wave3" />
+          <div className="ta-deco-wave1" /><div className="ta-deco-wave2" /><div className="ta-deco-wave3" />
         </div>
-
-        {/* Panel derecho — formulario */}
         <div className="ta-form-side">
-          {onClose && (
-            <button className="ta-close-btn" onClick={onClose}>
-              <i className="bi bi-x-lg"></i>
-            </button>
-          )}
+          {onClose && <button className="ta-close-btn" onClick={onClose}><i className="bi bi-x-lg"></i></button>}
           <div className="ta-form-scroll">
             {panel === 'login'    && <PanelLogin    onSwitch={setPanel} onSuccess={handleSuccess} />}
-            {panel === 'register' && <PanelRegistro onSwitch={setPanel} onVerify={handleVerified} />}
+            {panel === 'register' && <PanelRegistro onSwitch={setPanel} onRegistrado={handleRegistrado} />}
             {panel === 'recovery' && <PanelRecovery onSwitch={setPanel} />}
           </div>
         </div>
