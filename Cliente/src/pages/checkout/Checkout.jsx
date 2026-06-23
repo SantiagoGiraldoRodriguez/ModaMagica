@@ -278,21 +278,6 @@ export default function Checkout() {
               <span className="ck-free">Envío gratis según tu ubicación</span>
             </div>
 
-            {/* Descuento aplicado */}
-            {descuento && (
-              <div className="ck-summary-row ck-descuento-row">
-                <span>Descuento ({descuento.valor_descuento}%)</span>
-                <span className="ck-descuento-valor">− {fmt(montoDescuento)}</span>
-              </div>
-            )}
-
-            <div className="ck-summary-divider" />
-
-            <div className="ck-summary-total">
-              <span>Total</span>
-              <span>{fmt(total)}</span>
-            </div>
-
             {/* ── Campo código de descuento ── */}
             <div className="ck-descuento-box">
               {descuento ? (
@@ -330,6 +315,21 @@ export default function Checkout() {
                   )}
                 </>
               )}
+            </div>
+
+            {/* Descuento aplicado */}
+            {descuento && (
+              <div className="ck-summary-row ck-descuento-row">
+                <span>Descuento ({descuento.valor_descuento}%)</span>
+                <span className="ck-descuento-valor">− {fmt(montoDescuento)}</span>
+              </div>
+            )}
+
+            <div className="ck-summary-divider" />
+
+            <div className="ck-summary-total">
+              <span>Total</span>
+              <span>{fmt(total)}</span>
             </div>
 
             <button className="ck-btn-primary ck-confirm-btn" onClick={() => setModalDatos(true)}>
