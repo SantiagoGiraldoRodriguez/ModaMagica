@@ -13,7 +13,7 @@ const dominioCorreoExiste = async correo => {
     ]);
     return registros && registros.length > 0;
   } catch {
-    return true; // si hay timeout o error, dejar pasar
+    return true;
   }
 };
 
@@ -175,7 +175,6 @@ const create = async (req, res) => {
   } = req.body;
 
   try {
-    // ── REGLA 1: Solo puede existir un superadmin (id_rol = 1) ────────────
     if (Number(id_rol) === 1) {
       const superadmins = await pool.query(
         'SELECT id_usuario FROM usuario WHERE id_rol = 1'
@@ -186,8 +185,6 @@ const create = async (req, res) => {
         });
     }
 
-    // ── REGLA 2: Verificar que el dominio del correo es real (MX) ─────────
-    // Se ejecuta en paralelo con la verificación de correo duplicado para no bloquear
     const [dominioValido, existeCorreo] = await Promise.all([
       dominioCorreoExiste(correo),
       pool.query('SELECT id_usuario FROM usuario WHERE LOWER(correo) = LOWER($1)', [correo.trim()])
@@ -223,7 +220,6 @@ const create = async (req, res) => {
       ]
     );
 
-    // ── Enviar correo de bienvenida (no bloquea la respuesta) ─────────────
     enviarCorreo({
       to: correo.trim(),
       subject: '✦ Bienvenido a Moda Mágica',
@@ -255,7 +251,6 @@ const update = async (req, res) => {
   } = req.body;
 
   try {
-    // ── REGLA 3: Usuario inactivo no puede ser modificado ─────────────────
     const usuarioActual = await pool.query(
       'SELECT estado, id_rol FROM usuario WHERE id_usuario = $1',
       [req.params.id]
@@ -268,7 +263,6 @@ const update = async (req, res) => {
         error: 'No se puede modificar un usuario inactivo. Actívalo primero desde el campo Estado.'
       });
 
-    // ── REGLA 1: No permitir asignar rol superadmin si ya existe otro ──────
     if (Number(id_rol) === 1 && usuarioActual.rows[0].id_rol !== 1) {
       const superadmins = await pool.query(
         'SELECT id_usuario FROM usuario WHERE id_rol = 1 AND id_usuario != $1',
@@ -393,6 +387,16 @@ const updatePerfilTienda = async (req, res) => {
 // ─── DELETE ───────────────────────────────────────────────────────────────────
 const remove = async (req, res) => {
   try {
+    // FIX: el Superadmin nunca puede ser eliminado
+    const usuario = await pool.query(
+      'SELECT id_rol FROM usuario WHERE id_usuario = $1',
+      [req.params.id]
+    );
+    if (usuario.rows.length > 0 && usuario.rows[0].id_rol === 1)
+      return res.status(403).json({
+        error: 'No se puede eliminar el Superadmin del sistema.'
+      });
+
     const pedidos = await pool.query(
       'SELECT COUNT(*) FROM pedido WHERE id_cliente = $1',
       [req.params.id]
