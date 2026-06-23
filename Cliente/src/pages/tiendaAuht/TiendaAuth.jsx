@@ -204,7 +204,6 @@ function PanelRegistro({ onSwitch, onRegistrado }) {
       })
       const data = await res.json()
       if (!res.ok) { setServerErr(data.error || 'Error al registrar.'); return }
-      // ✅ Registro exitoso → ir directo al login
       onRegistrado()
     } catch {
       setServerErr('No se pudo conectar con el servidor.')
@@ -565,7 +564,8 @@ export default function TiendaAuth({ onClose, onLoginSuccess }) {
 
   if (registrado && panel === 'login') return (
     <div className="ta-root">
-      <div className="ta-backdrop" onClick={onClose} />
+      {/* ✅ Sin onClick en el backdrop — no se cierra al hacer click por fuera */}
+      <div className="ta-backdrop" />
       <div className="ta-container">
         <div className="ta-deco">
           <div className="ta-deco-inner">
@@ -598,7 +598,8 @@ export default function TiendaAuth({ onClose, onLoginSuccess }) {
 
   return (
     <div className="ta-root">
-      <div className="ta-backdrop" onClick={onClose} />
+      {/* ✅ Sin onClick en el backdrop — no se cierra al hacer click por fuera */}
+      <div className="ta-backdrop" />
       <div className="ta-container">
         <div className="ta-deco">
           <div className="ta-deco-inner">
