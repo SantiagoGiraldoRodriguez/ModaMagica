@@ -2,18 +2,23 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import './Checkout.css'
 
-const IVA_PORCENTAJE = 0.19
 const CAT_BG_DEFAULT = 'linear-gradient(135deg,#f0ede8 0%,#e0dbd2 100%)'
 const API_BASE = import.meta.env.VITE_API_URL
 
 export default function Checkout() {
   const navigate = useNavigate()
-  const [carrito, setCarrito]       = useState([])
-  const [cargado, setCargado]       = useState(false)
-  const [sesion, setSesion]         = useState(null)
-  const [modalDatos, setModalDatos] = useState(false)
+  const [carrito, setCarrito]             = useState([])
+  const [cargado, setCargado]             = useState(false)
+  const [sesion, setSesion]               = useState(null)
+  const [modalDatos, setModalDatos]       = useState(false)
   const [loadingConfirm, setLoadingConfirm] = useState(false)
-  const [errorConfirm, setErrorConfirm] = useState('')
+  const [errorConfirm, setErrorConfirm]   = useState('')
+
+  // ── Descuento ──────────────────────────────────────────────────────────────
+  const [codigoInput, setCodigoInput]     = useState('')
+  const [descuento, setDescuento]         = useState(null)   // { valor_descuento, mensaje, id_descuento }
+  const [descuentoError, setDescuentoError] = useState('')
+  const [descuentoLoading, setDescuentoLoading] = useState(false)
 
   // ── Carga inicial ──────────────────────────────────────────────────────────
   useEffect(() => {
@@ -62,10 +67,61 @@ export default function Checkout() {
 
   const totalItems = carrito.reduce((s, i) => s + i.cantidad, 0)
   const subtotal   = carrito.reduce((s, i) => s + i.precio * i.cantidad, 0)
-  const iva        = subtotal * IVA_PORCENTAJE
-  const total      = subtotal + iva
+
+  // Descuento en pesos según porcentaje aplicado
+  const montoDescuento = descuento ? Math.round(subtotal * (descuento.valor_descuento / 100)) : 0
+  const total          = subtotal - montoDescuento
 
   const tieneDireccion = Boolean(sesion?.direccion && sesion.direccion.trim())
+
+  // ── Aplicar código de descuento ────────────────────────────────────────────
+  const aplicarDescuento = async () => {
+    if (!codigoInput.trim()) return
+    setDescuentoLoading(true)
+    setDescuentoError('')
+    setDescuento(null)
+
+    // Intentar con cada producto del carrito hasta encontrar uno válido
+    let aplicado = null
+    let ultimoError = 'Este código no aplica a ninguno de los productos en tu carrito.'
+
+    for (const item of carrito) {
+      try {
+        const res = await fetch(`${API_BASE}/api/descuentos/aplicar`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            codigo:      codigoInput.trim(),
+            id_usuario:  sesion?.id,
+            id_producto: item.id_producto,
+          }),
+        })
+        const data = await res.json()
+        if (res.ok) {
+          aplicado = data
+          break
+        } else {
+          ultimoError = data.error || ultimoError
+        }
+      } catch {
+        ultimoError = 'No se pudo conectar con el servidor.'
+      }
+    }
+
+    if (aplicado) {
+      setDescuento(aplicado)
+      setDescuentoError('')
+    } else {
+      setDescuentoError(ultimoError)
+    }
+    setDescuentoLoading(false)
+  }
+
+  const quitarDescuento = () => {
+    setDescuento(null)
+    setCodigoInput('')
+    setDescuentoError('')
+  }
 
   // ── Confirmar compra + redirigir a Mercado Pago ───────────────────────────
   const handleConfirmarCompra = async () => {
@@ -86,7 +142,11 @@ export default function Checkout() {
       const res = await fetch(`${API_BASE}/api/pedidos`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id_cliente: sesion.id, items }),
+        body: JSON.stringify({
+          id_cliente:      sesion.id,
+          items,
+          codigo_descuento: descuento ? codigoInput.trim() : undefined,
+        }),
       })
       const data = await res.json()
       if (!res.ok) {
@@ -118,7 +178,8 @@ export default function Checkout() {
         return
       }
 
-      // 4. Redirigir a Mercado Pago
+      // 4. Limpiar carrito y redirigir a Mercado Pago
+      localStorage.removeItem('mm_carrito')
       window.location.href = mpData.init_point
 
     } catch {
@@ -225,16 +286,59 @@ export default function Checkout() {
               <span>Envío</span>
               <span className="ck-free">Envío gratis según tu ubicación</span>
             </div>
-            <div className="ck-summary-row">
-              <span>IVA (19%)</span>
-              <span>{fmt(iva)}</span>
-            </div>
+
+            {/* Descuento aplicado */}
+            {descuento && (
+              <div className="ck-summary-row ck-descuento-row">
+                <span>Descuento ({descuento.valor_descuento}%)</span>
+                <span className="ck-descuento-valor">− {fmt(montoDescuento)}</span>
+              </div>
+            )}
 
             <div className="ck-summary-divider" />
 
             <div className="ck-summary-total">
               <span>Total</span>
               <span>{fmt(total)}</span>
+            </div>
+
+            {/* ── Campo código de descuento ── */}
+            <div className="ck-descuento-box">
+              {descuento ? (
+                <div className="ck-descuento-aplicado">
+                  <div className="ck-descuento-aplicado-info">
+                    <i className="bi bi-tag-fill"></i>
+                    <span><strong>{codigoInput.toUpperCase()}</strong> — {descuento.valor_descuento}% off</span>
+                  </div>
+                  <button className="ck-descuento-quitar" onClick={quitarDescuento}>
+                    <i className="bi bi-x-lg"></i>
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <div className="ck-descuento-input-row">
+                    <input
+                      className="ck-descuento-input"
+                      placeholder="Código de descuento"
+                      value={codigoInput}
+                      onChange={e => { setCodigoInput(e.target.value); setDescuentoError('') }}
+                      onKeyDown={e => e.key === 'Enter' && aplicarDescuento()}
+                    />
+                    <button
+                      className="ck-descuento-btn"
+                      onClick={aplicarDescuento}
+                      disabled={descuentoLoading || !codigoInput.trim()}
+                    >
+                      {descuentoLoading ? <i className="bi bi-hourglass-split"></i> : 'Aplicar'}
+                    </button>
+                  </div>
+                  {descuentoError && (
+                    <p className="ck-descuento-error">
+                      <i className="bi bi-exclamation-circle"></i> {descuentoError}
+                    </p>
+                  )}
+                </>
+              )}
             </div>
 
             <button className="ck-btn-primary ck-confirm-btn" onClick={() => setModalDatos(true)}>
@@ -314,9 +418,20 @@ export default function Checkout() {
                 ))}
               </div>
               <div className="ck-modal-totales">
-                <div className="ck-modal-total-row"><span>Subtotal</span><span>{fmt(subtotal)}</span></div>
-                <div className="ck-modal-total-row"><span>IVA (19%)</span><span>{fmt(iva)}</span></div>
-                <div className="ck-modal-total-row final"><span>Total a pagar</span><span>{fmt(total)}</span></div>
+                <div className="ck-modal-total-row">
+                  <span>Subtotal</span>
+                  <span>{fmt(subtotal)}</span>
+                </div>
+                {descuento && (
+                  <div className="ck-modal-total-row" style={{ color: '#10b981' }}>
+                    <span>Descuento ({descuento.valor_descuento}%)</span>
+                    <span>− {fmt(montoDescuento)}</span>
+                  </div>
+                )}
+                <div className="ck-modal-total-row final">
+                  <span>Total a pagar</span>
+                  <span>{fmt(total)}</span>
+                </div>
               </div>
             </div>
 
