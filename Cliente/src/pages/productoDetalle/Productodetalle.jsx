@@ -19,8 +19,6 @@ const CAT_BG = {
   DEFAULT:    'linear-gradient(135deg,#f0ede8 0%,#e0dbd2 100%)',
 }
 
-// session_id persistente por navegador (igual que en Tienda.jsx), usado
-// para identificar las reservas temporales de stock de este carrito.
 const getSessionId = () => {
   let id = localStorage.getItem('mm_session_id')
   if (!id) {
@@ -146,7 +144,6 @@ export default function ProductoDetalle() {
 
   const detalle = productos.find(p => p.id === Number(id)) || null
 
-  // Reinicia selección cuando cambia de producto (navegando entre relacionados)
   useEffect(() => {
     setImgIndex(0); setColorSelec(null); setTallaSelec(null)
     window.scrollTo({ top: 0, behavior: 'instant' })
@@ -215,11 +212,22 @@ export default function ProductoDetalle() {
         if (existe.cantidad >= stockMax) { showToast(`Solo hay ${stockMax} unidades disponibles.`); ok = false; return prev }
         return prev.map(i=>i.key===key?{...i,cantidad:i.cantidad+1}:i)
       }
-      return [...prev,{key,id:detalle.id,nombre:detalle.nombre,precio:detalle.precio,
-        color:colorSelec,talla:tallaSelec,cantidad:1,stockMax,
-        id_producto_color, id_talla,
-        imagen:imagenItem,
-        catBg:CAT_BG[(detalle.categorias[0]?.nombre_categoria||'').toUpperCase()]||CAT_BG.DEFAULT}]
+      // ✅ FIX: se agrega id_producto para que el checkout pueda validar descuentos por prenda
+      return [...prev,{
+        key,
+        id: detalle.id,
+        id_producto: detalle.id,
+        nombre: detalle.nombre,
+        precio: detalle.precio,
+        color: colorSelec,
+        talla: tallaSelec,
+        cantidad: 1,
+        stockMax,
+        id_producto_color,
+        id_talla,
+        imagen: imagenItem,
+        catBg: CAT_BG[(detalle.categorias[0]?.nombre_categoria||'').toUpperCase()]||CAT_BG.DEFAULT
+      }]
     })
     if (!ok) return false
     showToast(`✓ ${detalle.nombre} agregado`)
@@ -297,7 +305,6 @@ export default function ProductoDetalle() {
     el.scrollBy({ left: dir * cardWidth * 2, behavior: 'smooth' })
   }
 
-  // ── Estados de carga / error / no encontrado ──
   if (loading) return (
     <div className="t-root">
       <div className="t-state" style={{minHeight:'70vh',justifyContent:'center'}}>
@@ -334,7 +341,6 @@ export default function ProductoDetalle() {
 
   return (
     <div className="t-root">
-      {/* ── Header simple ── */}
       <header className="pd-header">
         <a className="t-logo" href="/tienda">✦ MODA MÁGICA ✦</a>
         <div className="pd-header-actions">
