@@ -81,38 +81,28 @@ export default function Checkout() {
     setDescuentoError('')
     setDescuento(null)
 
-    // Intentar con cada producto del carrito hasta encontrar uno válido
-    let aplicado = null
-    let ultimoError = 'Este código no aplica a ninguno de los productos en tu carrito.'
+    try {
+      // Usar validarDescuento de pedidos — solo valida sin quemar el uso
+      const res = await fetch(`${API_BASE}/api/pedidos/descuento/${codigoInput.trim()}`)
+      const data = await res.json()
 
-    for (const item of carrito) {
-      try {
-        const res = await fetch(`${API_BASE}/api/descuentos/aplicar`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            codigo:      codigoInput.trim(),
-            id_usuario:  sesion?.id,
-            id_producto: item.id_producto,
-          }),
-        })
-        const data = await res.json()
-        if (res.ok) {
-          aplicado = data
-          break
+      if (!res.ok) {
+        setDescuentoError(data.error || 'Código inválido o expirado.')
+      } else {
+        // Verificar que al menos un producto del carrito esté en prendas_ids
+        const prendasPermitidas = data.prendas_ids || []
+        const tieneProductoValido = prendasPermitidas.length === 0
+          || carrito.some(item => prendasPermitidas.includes(item.id_producto))
+
+        if (!tieneProductoValido) {
+          setDescuentoError('Este descuento no aplica a ninguno de los productos en tu carrito.')
         } else {
-          ultimoError = data.error || ultimoError
+          setDescuento(data)
+          setDescuentoError('')
         }
-      } catch {
-        ultimoError = 'No se pudo conectar con el servidor.'
       }
-    }
-
-    if (aplicado) {
-      setDescuento(aplicado)
-      setDescuentoError('')
-    } else {
-      setDescuentoError(ultimoError)
+    } catch {
+      setDescuentoError('No se pudo conectar con el servidor.')
     }
     setDescuentoLoading(false)
   }
@@ -143,9 +133,10 @@ export default function Checkout() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          id_cliente:      sesion.id,
+          id_cliente:        sesion.id,
           items,
-          codigo_descuento: descuento ? codigoInput.trim() : undefined,
+          id_descuento:      descuento ? descuento.id_descuento : undefined,
+          descuento_aplicado: descuento ? montoDescuento : undefined,
         }),
       })
       const data = await res.json()
