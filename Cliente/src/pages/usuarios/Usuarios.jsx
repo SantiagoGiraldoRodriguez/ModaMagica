@@ -298,7 +298,16 @@ export default function Usuarios() {
                         <td><div className="u-td-usuario"><div className="u-avatar" style={{ background:AVATAR_COLORS[idx%AVATAR_COLORS.length] }}>{getInitials(nombre)}</div><strong className="u-nombre">{nombre}</strong></div></td>
                         <td><span className="u-rol-badge" style={{ background:rc.bg, color:rc.color }}><i className={`bi ${rolIcon(u.id_rol)} u-rol-icon`}></i> {rolLabel(u.id_rol)}</span></td>
                         <td><span className={`status-badge ${u.estado==='activo'?'status-active':'status-inactivo'}`} style={{ display:'inline-flex', alignItems:'center', gap:5 }}><span className="u-estado-dot" style={{ background:u.estado==='activo'?'#10b981':'#9ca3af' }}></span>{u.estado==='activo'?'Activo':'Inactivo'}</span></td>
-                        <td><div className="action-btns"><button className="tbl-btn info" onClick={()=>openInfo(u)}><i className="bi bi-info-circle"></i> Info</button><button className={`tbl-btn edit${u.estado==='inactivo'?' disabled':''}`} onClick={()=>openEdit(u)} title={u.estado==='inactivo'?'Usuario inactivo: no se puede editar':'Editar'}><i className="bi bi-pencil"></i></button><button className="tbl-btn delete" onClick={()=>setConfirm({ show:true, id:u.id_usuario, error:'' })}><i className="bi bi-trash"></i></button></div></td>
+                        <td>
+                          <div className="action-btns">
+                            <button className="tbl-btn info" onClick={()=>openInfo(u)}><i className="bi bi-info-circle"></i> Info</button>
+                            <button className={`tbl-btn edit${u.estado==='inactivo'?' disabled':''}`} onClick={()=>openEdit(u)} title={u.estado==='inactivo'?'Usuario inactivo: no se puede editar':'Editar'}><i className="bi bi-pencil"></i></button>
+                            {/* FIX: el Superadmin (id_rol === 1) nunca puede ser eliminado */}
+                            {u.id_rol !== 1 && (
+                              <button className="tbl-btn delete" onClick={()=>setConfirm({ show:true, id:u.id_usuario, error:'' })}><i className="bi bi-trash"></i></button>
+                            )}
+                          </div>
+                        </td>
                       </tr>
                     )
                   })
