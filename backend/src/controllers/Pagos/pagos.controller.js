@@ -14,6 +14,8 @@ const crearPreferencia = async (req, res) => {
     if (pedResult.rows.length === 0)
       return res.status(404).json({ error: 'Pedido no encontrado.' });
 
+    const pedido = pedResult.rows[0];
+
     const detalles = await pool.query(`
       SELECT pr.nombre_producto, dp.cantidad, dp.precio_vendido
       FROM detalle_pedido dp
@@ -22,13 +24,30 @@ const crearPreferencia = async (req, res) => {
       WHERE dp.id_pedido = $1
     `, [id_pedido]);
 
-    const items = detalles.rows.map(d => ({
-      id:         String(id_pedido),
-      title:      d.nombre_producto,
-      quantity:   Number(d.cantidad),
-      unit_price: Number(d.precio_vendido),
-      currency_id: 'COP',
-    }));
+    // Si hay descuento aplicado, se envía un único item con el total_final
+    // para que Mercado Pago refleje el precio real a cobrar.
+    // Si no hay descuento, se envían los items normales.
+    let items;
+    if (Number(pedido.descuento_aplicado) > 0) {
+      const nombreProductos = detalles.rows.map(d => d.nombre_producto).join(', ');
+      items = [
+        {
+          id:          String(id_pedido),
+          title:       nombreProductos,
+          quantity:    1,
+          unit_price:  Number(pedido.total_final),
+          currency_id: 'COP',
+        }
+      ];
+    } else {
+      items = detalles.rows.map(d => ({
+        id:          String(id_pedido),
+        title:       d.nombre_producto,
+        quantity:    Number(d.cantidad),
+        unit_price:  Number(d.precio_vendido),
+        currency_id: 'COP',
+      }));
+    }
 
     const preference = new Preference(mp);
     const response = await preference.create({
@@ -65,13 +84,11 @@ const webhook = async (req, res) => {
   try {
     const paymentApi = new Payment(mp);
     const pago = await paymentApi.get({ id: data.id });
-
     const id_pedido = pago.external_reference;
 
     const estadoPago   = pago.status === 'approved' ? 'pagado'
                        : pago.status === 'pending'  ? 'pendiente'
                        : 'rechazado';
-
     const estadoPedido = pago.status === 'approved' ? 'procesando' : 'pendiente';
 
     await pool.query(`
@@ -82,7 +99,6 @@ const webhook = async (req, res) => {
           estado_pedido   = $4
       WHERE id_pedido = $5
     `, [estadoPago, pago.payment_type_id, String(pago.id), estadoPedido, id_pedido]);
-
   } catch (err) {
     console.error('webhook MP:', err.message);
   }
