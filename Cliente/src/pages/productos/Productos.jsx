@@ -590,13 +590,12 @@ export default function Productos() {
         </div>
       )}
 
-      {confirm.show && (
-        <ConfirmModal
-          mensaje="¿Estás seguro de que quieres eliminar este producto? Esta acción no se puede deshacer."
-          onConfirm={() => eliminar(confirm.id)}
-          onCancel={() => setConfirm({ show: false, id: null })}
-        />
-      )}
+      <ConfirmModal
+        show={confirm.show}
+        mensaje="¿Estás seguro de que quieres eliminar este producto? Esta acción no se puede deshacer."
+        onConfirm={() => eliminar(confirm.id)}
+        onCancel={() => setConfirm({ show: false, id: null })}
+      />
 
       {errorModal.show && (
         <div className="modal-overlay" onClick={() => setErrorModal({ show: false, mensaje: '' })}>
