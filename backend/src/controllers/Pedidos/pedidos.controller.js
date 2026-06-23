@@ -1,4 +1,5 @@
 const pool = require('../../config/db');
+const { enviarCorreo, emailBase } = require('../../utils/correo');
 
 // ═══════════════════════════════════════════
 // GET ALL
@@ -67,7 +68,7 @@ const getAll = async (req, res) => {
 };
 
 // ═══════════════════════════════════════════
-// GET BY CLIENTE (pedidos de un usuario específico, para "Mis pedidos")
+// GET BY CLIENTE
 // ═══════════════════════════════════════════
 const getByCliente = async (req, res) => {
   try {
@@ -219,7 +220,7 @@ const getClientes = async (req, res) => {
 };
 
 // ═══════════════════════════════════════════
-// GET PRODUCTOS ACTIVOS CON VARIANTES E IMAGEN
+// GET PRODUCTOS ACTIVOS
 // ═══════════════════════════════════════════
 const getProductos = async (req, res) => {
   try {
@@ -256,10 +257,6 @@ const getProductos = async (req, res) => {
 
 // ═══════════════════════════════════════════
 // VALIDAR CÓDIGO DE DESCUENTO
-// Consulta la tabla "descuentos" (la del módulo de Descuentos del panel,
-// con prendas_ids), no la tabla vieja "descuento". Devuelve prendas_ids
-// para que el frontend pueda calcular sobre qué productos del pedido
-// aplica el descuento.
 // ═══════════════════════════════════════════
 const validarDescuento = async (req, res) => {
   const { codigo } = req.params;
@@ -302,11 +299,78 @@ const validarDescuento = async (req, res) => {
 };
 
 // ═══════════════════════════════════════════
+// HTML DEL CORREO DE CONFIRMACIÓN
+// ═══════════════════════════════════════════
+const correoConfirmacionHTML = ({ nombre, id_pedido, fecha, items, subtotal, descuento, total, direccion }) => {
+  const fmt = n => new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(n);
+
+  const filasProductos = items.map(item => `
+    <tr>
+      <td style="padding:10px 8px;border-bottom:1px solid #f0ede8;">
+        <strong style="color:#1a1a1a;">${item.nombre_producto}</strong><br/>
+        <span style="color:#888;font-size:13px;">${item.nombre_color} · ${item.nombre_talla}</span>
+      </td>
+      <td style="padding:10px 8px;border-bottom:1px solid #f0ede8;text-align:center;color:#555;">
+        ${item.cantidad}
+      </td>
+      <td style="padding:10px 8px;border-bottom:1px solid #f0ede8;text-align:right;color:#1a1a1a;">
+        ${fmt(item.precio_vendido)}
+      </td>
+      <td style="padding:10px 8px;border-bottom:1px solid #f0ede8;text-align:right;font-weight:bold;color:#C8920A;">
+        ${fmt(item.precio_vendido * item.cantidad)}
+      </td>
+    </tr>
+  `).join('')
+
+  const filaDescuento = descuento > 0 ? `
+    <tr>
+      <td colspan="3" style="padding:8px;text-align:right;color:#10b981;">Descuento aplicado</td>
+      <td style="padding:8px;text-align:right;color:#10b981;font-weight:bold;">− ${fmt(descuento)}</td>
+    </tr>
+  ` : ''
+
+  return emailBase(`
+    <p>Hola <strong>${nombre}</strong>, ¡gracias por tu compra! 🎉</p>
+    <p style="color:#555;">Tu pedido ha sido recibido y está siendo procesado. A continuación el resumen:</p>
+
+    <div style="background:#f9f7f4;border-radius:8px;padding:14px 16px;margin:16px 0;font-size:14px;color:#555;">
+      <strong>Pedido #${id_pedido}</strong> &nbsp;·&nbsp; ${fecha}<br/>
+      <span>📍 Envío a: ${direccion}</span>
+    </div>
+
+    <table style="width:100%;border-collapse:collapse;font-size:14px;margin-bottom:8px;">
+      <thead>
+        <tr style="background:#f0ede8;">
+          <th style="padding:10px 8px;text-align:left;color:#888;font-weight:600;">Producto</th>
+          <th style="padding:10px 8px;text-align:center;color:#888;font-weight:600;">Cant.</th>
+          <th style="padding:10px 8px;text-align:right;color:#888;font-weight:600;">Precio u.</th>
+          <th style="padding:10px 8px;text-align:right;color:#888;font-weight:600;">Subtotal</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${filasProductos}
+      </tbody>
+      <tfoot>
+        <tr>
+          <td colspan="3" style="padding:8px;text-align:right;color:#555;">Subtotal</td>
+          <td style="padding:8px;text-align:right;color:#1a1a1a;">${fmt(subtotal)}</td>
+        </tr>
+        ${filaDescuento}
+        <tr>
+          <td colspan="3" style="padding:10px 8px;text-align:right;font-weight:bold;font-size:15px;">Total pagado</td>
+          <td style="padding:10px 8px;text-align:right;font-weight:bold;font-size:15px;color:#C8920A;">${fmt(total)}</td>
+        </tr>
+      </tfoot>
+    </table>
+
+    <p style="color:#555;font-size:13px;margin-top:16px;">
+      Si tienes alguna pregunta sobre tu pedido, contáctanos por WhatsApp o Instagram. ¡Gracias por confiar en Moda Mágica! ✦
+    </p>
+  `)
+}
+
+// ═══════════════════════════════════════════
 // CREATE
-// El descuento (tabla "descuentos") aplica solo sobre el subtotal de las
-// prendas del pedido que estén en prendas_ids; el cálculo final ya viene
-// hecho desde el frontend (descuento_aplicado), aquí solo se valida que
-// el descuento siga vigente y se registra el uso.
 // ═══════════════════════════════════════════
 const create = async (req, res) => {
   const { id_cliente, id_descuento, descuento_aplicado, items } = req.body;
@@ -319,17 +383,14 @@ const create = async (req, res) => {
   try {
     await client.query('BEGIN');
 
-    // ── Resolver dirección de envío a partir del perfil del usuario ─────────
-    // El perfil solo guarda un texto libre (usuario.direccion); la tabla
-    // direccion_envio sigue existiendo porque pedido.id_direccion la requiere,
-    // así que aquí se crea/reutiliza una fila automáticamente.
     const usuarioRes = await client.query(
-      'SELECT direccion FROM usuario WHERE id_usuario = $1',
+      'SELECT primer_nombre, primer_apellido, correo, direccion FROM usuario WHERE id_usuario = $1',
       [id_cliente]
     );
     if (usuarioRes.rows.length === 0) throw new Error('Cliente no encontrado.');
 
-    const direccionTexto = (usuarioRes.rows[0].direccion || '').trim();
+    const usuario = usuarioRes.rows[0];
+    const direccionTexto = (usuario.direccion || '').trim();
     if (!direccionTexto)
       throw new Error('Debes registrar una dirección en tu perfil antes de finalizar la compra.');
 
@@ -353,13 +414,18 @@ const create = async (req, res) => {
     }
 
     let total_pedido = 0;
+    const itemsConPrecio = [];
+
     for (const item of items) {
       const prod = await client.query(`
-        SELECT pr.precio_unitario
+        SELECT pr.precio_unitario, pr.nombre_producto, co.nombre_color, t.nombre_talla
         FROM producto_color pc
         JOIN producto pr ON pr.id_producto = pc.id_producto
-        WHERE pc.id_producto_color = $1
-      `, [item.id_producto_color]);
+        JOIN color co ON co.id_color = pc.id_color
+        JOIN inventario_color_talla ict ON ict.id_producto_color = pc.id_producto_color
+        JOIN talla t ON t.id_talla = ict.id_talla
+        WHERE pc.id_producto_color = $1 AND ict.id_talla = $2
+      `, [item.id_producto_color, item.id_talla]);
       if (prod.rows.length === 0) throw new Error(`Variante ${item.id_producto_color} no encontrada.`);
 
       const stock = await client.query(`
@@ -369,7 +435,15 @@ const create = async (req, res) => {
       if (!stock.rows.length || stock.rows[0].stock_actual < item.cantidad)
         throw new Error(`Stock insuficiente para una de las variantes.`);
 
-      total_pedido += Number(prod.rows[0].precio_unitario) * item.cantidad;
+      const precio = Number(prod.rows[0].precio_unitario);
+      total_pedido += precio * item.cantidad;
+      itemsConPrecio.push({
+        ...item,
+        precio_vendido: precio,
+        nombre_producto: prod.rows[0].nombre_producto,
+        nombre_color:    prod.rows[0].nombre_color,
+        nombre_talla:    prod.rows[0].nombre_talla,
+      });
     }
 
     let descuento_final = 0;
@@ -383,9 +457,6 @@ const create = async (req, res) => {
       `, [id_descuento]);
       if (desc.rows.length > 0) {
         id_descuento_final = desc.rows[0].id_descuento;
-        // El monto exacto ya viene calculado desde el frontend solo sobre
-        // las prendas que califican; se respeta siempre que no sea mayor
-        // al subtotal del pedido, como salvaguarda contra manipulación.
         descuento_final = Math.min(Number(descuento_aplicado) || 0, total_pedido);
       }
     }
@@ -400,20 +471,11 @@ const create = async (req, res) => {
 
     const id_pedido = pedidoRes.rows[0].id_pedido;
 
-    for (const item of items) {
-      const prod = await client.query(`
-        SELECT pr.precio_unitario
-        FROM producto_color pc
-        JOIN producto pr ON pr.id_producto = pc.id_producto
-        WHERE pc.id_producto_color = $1
-      `, [item.id_producto_color]);
-
-      const precio = Number(prod.rows[0].precio_unitario);
-
+    for (const item of itemsConPrecio) {
       await client.query(`
         INSERT INTO detalle_pedido (id_pedido, id_producto_color, cantidad, precio_vendido)
         VALUES ($1, $2, $3, $4)
-      `, [id_pedido, item.id_producto_color, item.cantidad, precio]);
+      `, [id_pedido, item.id_producto_color, item.cantidad, item.precio_vendido]);
 
       await client.query(`
         UPDATE inventario_color_talla
@@ -449,6 +511,28 @@ const create = async (req, res) => {
     }
 
     await client.query('COMMIT');
+
+    // ── Enviar correo de confirmación (no bloquea la respuesta) ────────────
+    const fechaFormateada = new Date().toLocaleDateString('es-CO', {
+      year: 'numeric', month: 'long', day: 'numeric'
+    });
+    const nombreCliente = `${usuario.primer_nombre} ${usuario.primer_apellido}`;
+
+    enviarCorreo({
+      to: usuario.correo,
+      subject: `✦ Moda Mágica — Confirmación de tu pedido #${id_pedido}`,
+      html: correoConfirmacionHTML({
+        nombre:    nombreCliente,
+        id_pedido,
+        fecha:     fechaFormateada,
+        items:     itemsConPrecio,
+        subtotal:  total_pedido,
+        descuento: descuento_final,
+        total:     total_final,
+        direccion: direccionTexto,
+      }),
+    }).catch(err => console.error('⚠️  Error enviando correo de confirmación:', err.message));
+
     res.status(201).json(pedidoRes.rows[0]);
   } catch (err) {
     await client.query('ROLLBACK');
@@ -505,14 +589,12 @@ const updateEstado = async (req, res) => {
 
 // ═══════════════════════════════════════════
 // DELETE
-// Solo se puede eliminar si el estado es 'entregado'
 // ═══════════════════════════════════════════
 const remove = async (req, res) => {
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
 
-    // 1. Verificar que el pedido existe
     const existe = await client.query(
       'SELECT id_pedido, estado_pedido FROM pedido WHERE id_pedido = $1',
       [req.params.id]
@@ -522,7 +604,6 @@ const remove = async (req, res) => {
       return res.status(404).json({ error: 'Pedido no encontrado.' });
     }
 
-    // 2. Bloquear si el estado NO es 'entregado'
     const { estado_pedido } = existe.rows[0];
     if (estado_pedido !== 'entregado') {
       await client.query('ROLLBACK');
@@ -531,7 +612,6 @@ const remove = async (req, res) => {
       });
     }
 
-    // 3. Eliminar en orden correcto
     await client.query('DELETE FROM historial_estado_pedido WHERE id_pedido = $1', [req.params.id]);
     await client.query('DELETE FROM movimiento_inventario  WHERE id_pedido = $1', [req.params.id]);
     await client.query('DELETE FROM detalle_pedido         WHERE id_pedido = $1', [req.params.id]);
