@@ -86,6 +86,7 @@ export default function Productos() {
   const [nuevaTallaGrupo, setNuevaTallaGrupo] = useState('')
   const [gruposExtra, setGruposExtra]   = useState([])
   const [serverError, setServerError]   = useState('')
+  const [errorModal, setErrorModal]     = useState({ show: false, mensaje: '' })
   const inputFileRef = useRef()
 
   const getImageUrl = imagen => {
@@ -306,9 +307,18 @@ export default function Productos() {
   }
 
   const eliminar = async id => {
-    try { await axios.delete(`${API_PRODUCTOS}/${id}`); await cargarDatos() }
-    catch (err) { console.error('Error eliminar:', err.response?.data||err.message) }
-    setConfirm({show:false,id:null})
+    try {
+      await axios.delete(`${API_PRODUCTOS}/${id}`)
+      await cargarDatos()
+    } catch (err) {
+      const msg = err.response?.data?.error || ''
+      if (err.response?.status === 409 || msg.toLowerCase().includes('pedido')) {
+        setErrorModal({ show: true, mensaje: 'No se puede eliminar este producto porque está asociado a uno o más pedidos.' })
+      } else {
+        console.error('Error eliminar:', msg || err.message)
+      }
+    }
+    setConfirm({ show: false, id: null })
   }
 
   const badgeStyle = e => ({
@@ -369,7 +379,7 @@ export default function Productos() {
                           </td>
                           <td><span style={{fontWeight:700,fontSize:13,color:p.stock_total===0?'#ef4444':p.stock_total<5?'#f59e0b':'var(--text)'}}>{p.stock_total} uds</span></td>
                           <td><span className="prod-estado-badge" style={{background:s.background,color:s.color}}><span className="prod-estado-dot" style={{background:s.dot}}/>{p.estado.charAt(0).toUpperCase()+p.estado.slice(1)}</span></td>
-                          <td><div className="action-btns"><button className="tbl-btn edit" onClick={()=>openEdit(p)}><i className="bi bi-pencil"></i></button></div></td>
+                          <td><div className="action-btns"><button className="tbl-btn edit" onClick={()=>openEdit(p)}><i className="bi bi-pencil"></i></button><button className="tbl-btn delete" onClick={()=>setConfirm({show:true,id:p.id})}><i className="bi bi-trash"></i></button></div></td>
                         </tr>
                       )
                     })
@@ -580,7 +590,33 @@ export default function Productos() {
         </div>
       )}
 
-      {/* El botón de eliminar producto fue removido intencionalmente */}
+      {confirm.show && (
+        <ConfirmModal
+          mensaje="¿Estás seguro de que quieres eliminar este producto? Esta acción no se puede deshacer."
+          onConfirm={() => eliminar(confirm.id)}
+          onCancel={() => setConfirm({ show: false, id: null })}
+        />
+      )}
+
+      {errorModal.show && (
+        <div className="modal-overlay" onClick={() => setErrorModal({ show: false, mensaje: '' })}>
+          <div className="modal-box" style={{ maxWidth: 420, textAlign: 'center' }} onClick={e => e.stopPropagation()}>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, marginBottom: 18 }}>
+              <div style={{ width: 48, height: 48, borderRadius: '50%', background: 'rgba(239,68,68,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <i className="bi bi-exclamation-circle-fill" style={{ color: '#ef4444', fontSize: 22 }}></i>
+              </div>
+              <div className="modal-title" style={{ marginBottom: 0 }}>No se puede eliminar</div>
+            </div>
+            <div style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: 10, padding: '12px 16px', display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: 20, textAlign: 'left' }}>
+              <i className="bi bi-exclamation-triangle" style={{ color: '#ef4444', marginTop: 2, flexShrink: 0 }}></i>
+              <span style={{ fontSize: 14, color: 'var(--text)' }}>{errorModal.mensaje}</span>
+            </div>
+            <div className="modal-actions" style={{ justifyContent: 'center' }}>
+              <button className="btn-secondary" onClick={() => setErrorModal({ show: false, mensaje: '' })}>Cerrar</button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   )
 }
