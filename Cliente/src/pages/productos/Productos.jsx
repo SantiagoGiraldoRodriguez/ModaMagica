@@ -126,9 +126,6 @@ export default function Productos() {
   const totalPages = Math.ceil(filtrado.length / ITEMS_PER_PAGE)
   const paginado   = filtrado.slice((currentPage-1)*ITEMS_PER_PAGE, currentPage*ITEMS_PER_PAGE)
 
-  // Tallas creadas por el usuario que ya están guardadas en la base de datos,
-  // agrupadas por su campo "grupo". Estas persisten siempre, sin depender
-  // de la sesión actual del navegador.
   const tallasPersonalizadasPorGrupo = () => {
     const mapa = {}
     tallasDB.forEach(t => {
@@ -180,7 +177,17 @@ export default function Productos() {
 
   const openEdit = async p => {
     setEditando(p.id)
-    const coloresForm = p.colores.map(c => ({ id_color:c.id_color, nombre_color:c.nombre_color, hex_code:c.hex_code, tallas:(c.tallas||[]).map(t=>({ id_talla:t.id_talla, nombre_talla:t.nombre_talla, stock_actual:Number(t.stock_actual??0), id_variante:t.id_variante??null })) }))
+    const coloresForm = p.colores.map(c => ({
+      id_color:     c.id_color,
+      nombre_color: c.nombre_color,
+      hex_code:     c.hex_code,
+      tallas: (c.tallas||[]).map(t => ({
+        id_talla:     t.id_talla,
+        nombre_talla: t.nombre_talla,
+        stock_actual: Number(t.stock_actual ?? 0),
+        id_variante:  t.id_variante ?? null
+      }))
+    }))
     setForm({ nombre:p.nombre, categorias:p.categorias.map(c=>c.id_categoria), precio:p.precio, descripcion:p.descripcion||'', estado:p.estado, colores:coloresForm })
     setErrors({}); setImagenesNuevas([]); setModalColor(false); setNuevoColor({nombre:'',hex:'#000000'}); setGrupoActivoColor({}); setNuevaTalla(''); setNuevaTallaGrupo(''); setServerError('')
     try { const res = await axios.get(`${API_IMAGENES}/${p.id}`); setImagenes(res.data) } catch { setImagenes([]) }
@@ -210,7 +217,7 @@ export default function Productos() {
   }
 
   const agregarTalla = (id_color, talla) => {
-    setForm(prev => ({ ...prev, colores:prev.colores.map(c => { if (c.id_color!==id_color) return c; if (c.tallas.find(t=>t.id_talla===talla.id_talla)) return c; return {...c,tallas:[...c.tallas,{id_talla:talla.id_talla,nombre_talla:talla.nombre_talla,stock_actual:0}]} }) }))
+    setForm(prev => ({ ...prev, colores:prev.colores.map(c => { if (c.id_color!==id_color) return c; if (c.tallas.find(t=>t.id_talla===talla.id_talla)) return c; return {...c,tallas:[...c.tallas,{id_talla:talla.id_talla,nombre_talla:talla.nombre_talla,stock_actual:0,id_variante:null}]} }) }))
     setErrors(prev => { const e={...prev}; delete e[`tallas_${id_color}`]; return e })
   }
 
@@ -246,27 +253,54 @@ export default function Productos() {
     catch (err) { console.error('Error setPrincipal:', err.response?.data||err.message) }
   }
 
+  // ─── FIX PRINCIPAL: se incluye id_variante en cada variante para que el
+  // backend pueda hacer UPDATE en lugar de INSERT cuando ya existe ───────────
   const save = async () => {
     if (!validar()) return
     try {
       const variantes = []
-      form.colores.forEach(c => { c.tallas.forEach(t => { variantes.push({id_color:c.id_color,id_talla:t.id_talla,stock_actual:t.stock_actual,precio_extra:0}) }) })
-      const payload = { nombre_producto:form.nombre, categorias:form.categorias, descripcion:form.descripcion, precio_unitario:form.precio, estado:form.estado, variantes }
-      let id_producto = editando
-      if (editando) { await axios.put(`${API_PRODUCTOS}/${editando}`,payload) }
-      else { const res=await axios.post(API_PRODUCTOS,payload); id_producto=res.data.id_producto }
-      if (imagenesNuevas.length>0) {
-        const fd=new FormData(); imagenesNuevas.forEach(img=>fd.append('imagenes',img.file))
-        await axios.post(`${API_IMAGENES}/${id_producto}`,fd,{headers:{'Content-Type':'multipart/form-data'}})
+      form.colores.forEach(c => {
+        c.tallas.forEach(t => {
+          variantes.push({
+            ...(t.id_variante ? { id_variante: t.id_variante } : {}),
+            id_color:     c.id_color,
+            id_talla:     t.id_talla,
+            stock_actual: t.stock_actual,
+            precio_extra: 0
+          })
+        })
+      })
+      const payload = {
+        nombre_producto:  form.nombre,
+        categorias:       form.categorias,
+        descripcion:      form.descripcion,
+        precio_unitario:  form.precio,
+        estado:           form.estado,
+        variantes
       }
-      await cargarDatos(); setModal(false)
+      let id_producto = editando
+      if (editando) {
+        await axios.put(`${API_PRODUCTOS}/${editando}`, payload)
+      } else {
+        const res = await axios.post(API_PRODUCTOS, payload)
+        id_producto = res.data.id_producto
+      }
+      if (imagenesNuevas.length > 0) {
+        const fd = new FormData()
+        imagenesNuevas.forEach(img => fd.append('imagenes', img.file))
+        await axios.post(`${API_IMAGENES}/${id_producto}`, fd, { headers: { 'Content-Type': 'multipart/form-data' } })
+      }
+      await cargarDatos()
+      setModal(false)
     } catch (err) {
-      console.error('Error save:', err.response?.data||err.message)
+      console.error('Error save:', err.response?.data || err.message)
       const status = err.response?.status
       const msg = err.response?.data?.error || err.response?.data?.message
-        || (status === 404 ? `No se encontró el producto (404). Puede que ya haya sido eliminado o el ID no sea válido.`
-        : status ? `Error ${status} al ${editando?'actualizar':'crear'} el producto.`
-        : 'No se pudo conectar con el servidor. Verifica tu conexión o que el backend esté activo.')
+        || (status === 404
+          ? `No se encontró el producto (404). Puede que ya haya sido eliminado o el ID no sea válido.`
+          : status
+            ? `Error ${status} al ${editando ? 'actualizar' : 'crear'} el producto.`
+            : 'No se pudo conectar con el servidor. Verifica tu conexión o que el backend esté activo.')
       setServerError(msg)
     }
   }
