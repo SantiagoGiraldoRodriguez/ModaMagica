@@ -1,41 +1,35 @@
-// ─── ENVÍO DE CORREO CON GMAIL (nodemailer) ────────────────────────────────
-
-const nodemailer = require('nodemailer');
-
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS
-  }
-});
-
 const emailBase = contenido => `
-  <div style="max-width:500px;margin:auto;font-family:sans-serif;border:1px solid #eee;padding:28px;border-radius:12px;">
+  <div style="max-width:520px;margin:auto;font-family:sans-serif;border:1px solid #eee;padding:28px;border-radius:12px;">
     <h2 style="color:#C8920A;text-align:center;">✦ MODA MÁGICA ✦</h2>
     ${contenido}
     <p style="font-size:12px;color:#aaa;margin-top:20px;">Si no realizaste esta acción, ignora este mensaje.</p>
   </div>
 `;
 
-/**
- * Envía un correo usando Gmail vía nodemailer.
- * @param {string} to - correo destinatario
- * @param {string} subject - asunto
- * @param {string} html - contenido HTML del correo
- */
 const enviarCorreo = async ({ to, subject, html }) => {
-  if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
-    console.error('⚠️  EMAIL_USER/EMAIL_PASS no configurados en el .env — correo NO enviado.');
-    throw new Error('El servicio de correo no está configurado.');
+  if (!process.env.RESEND_API_KEY) {
+    console.error('⚠️  RESEND_API_KEY no configurado — correo NO enviado.');
+    return;
   }
 
-  await transporter.sendMail({
-    from: `"Moda Mágica" <${process.env.EMAIL_USER}>`,
-    to,
-    subject,
-    html,
+  const res = await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${process.env.RESEND_API_KEY}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      from: 'Moda Mágica <onboarding@resend.dev>',
+      to,
+      subject,
+      html,
+    }),
   });
+
+  if (!res.ok) {
+    const err = await res.json();
+    console.error('Resend error:', err);
+  }
 };
 
 const codigoEmailHTML = (nombre, codigo, mensaje) => emailBase(`
