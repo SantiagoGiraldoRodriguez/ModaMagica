@@ -1,607 +1,108 @@
-/* ════════════ CHECKOUT — Moda Mágica ════════════ */
-
-.ck-root {
-  min-height: 100vh;
-  background: #f6f5f3;
-  font-family: 'Poppins', system-ui, sans-serif;
-}
-
-/* ── Header ── */
-.ck-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 18px 32px;
-  background: #fff;
-  border-bottom: 1px solid #ece7dd;
-}
-
-.ck-logo {
-  font-family: 'Playfair Display', Georgia, serif;
-  font-size: 1.25rem;
-  letter-spacing: 0.05em;
-  color: #8a5c02;
-  text-decoration: none;
-  font-weight: 600;
-}
-
-.ck-back {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  background: none;
-  border: none;
-  color: #5c5c5c;
-  font-size: 0.92rem;
-  cursor: pointer;
-  padding: 8px 14px;
-  border-radius: 8px;
-  transition: background 0.15s ease, color 0.15s ease;
-}
-
-.ck-back:hover {
-  background: #f3eee3;
-  color: #8a5c02;
-}
-
-/* ── Layout general ── */
-.ck-inner {
-  max-width: 1100px;
-  margin: 0 auto;
-  padding: 36px 24px 80px;
-}
-
-.ck-title {
-  font-family: 'Playfair Display', Georgia, serif;
-  font-size: 1.7rem;
-  color: #2b2b2b;
-  margin: 0 0 24px;
-}
-
-.ck-grid {
-  display: grid;
-  grid-template-columns: 1fr 360px;
-  gap: 24px;
-  align-items: start;
-}
-
-@media (max-width: 860px) {
-  .ck-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
-/* ── Tarjeta de productos ── */
-.ck-products-card {
-  background: #fff;
-  border-radius: 14px;
-  box-shadow: 0 2px 14px rgba(0, 0, 0, 0.05);
-  overflow: hidden;
-}
-
-.ck-products-head {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 18px 22px;
-  border-bottom: 1px solid #f0ece2;
-  font-weight: 600;
-  color: #2b2b2b;
-}
-
-.ck-products-head i {
-  color: #C8920A;
-  font-size: 1.1rem;
-}
-
-.ck-products-list {
-  display: flex;
-  flex-direction: column;
-}
-
-.ck-product-row {
-  display: flex;
-  gap: 16px;
-  padding: 20px 22px;
-  border-bottom: 1px solid #f3efe6;
-}
-
-.ck-product-row:last-child {
-  border-bottom: none;
-}
-
-.ck-product-img {
-  width: 84px;
-  height: 84px;
-  border-radius: 10px;
-  overflow: hidden;
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: #f0ede8;
-}
-
-.ck-product-img img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.ck-product-img i {
-  font-size: 1.6rem;
-  color: rgba(0, 0, 0, 0.25);
-}
-
-.ck-product-info {
-  flex: 1;
-  min-width: 0;
-}
-
-.ck-product-name {
-  font-weight: 600;
-  color: #2b2b2b;
-  margin: 0 0 4px;
-  font-size: 0.98rem;
-}
-
-.ck-product-meta {
-  color: #8a8a8a;
-  font-size: 0.85rem;
-  margin: 0 0 12px;
-  text-transform: capitalize;
-}
-
-.ck-qty-row {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-
-.ck-qty-control {
-  display: flex;
-  align-items: center;
-  border: 1px solid #e0dbd0;
-  border-radius: 8px;
-  overflow: hidden;
-}
-
-.ck-qty-control button {
-  width: 30px;
-  height: 30px;
-  border: none;
-  background: #faf8f4;
-  color: #2b2b2b;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: background 0.15s ease;
-}
-
-.ck-qty-control button:hover:not(:disabled) {
-  background: #f0e6cf;
-}
-
-.ck-qty-control button:disabled {
-  color: #c9c9c9;
-  cursor: not-allowed;
-}
-
-.ck-qty-control span {
-  width: 32px;
-  text-align: center;
-  font-size: 0.92rem;
-  font-weight: 500;
-}
-
-.ck-stock-tag {
-  font-size: 0.78rem;
-  color: #b07808;
-}
-
-.ck-product-right {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  justify-content: space-between;
-  flex-shrink: 0;
-}
-
-.ck-product-price {
-  font-weight: 600;
-  color: #2b2b2b;
-  margin: 0;
-  white-space: nowrap;
-}
-
-.ck-product-del {
-  background: none;
-  border: none;
-  color: #c2c2c2;
-  cursor: pointer;
-  font-size: 0.95rem;
-  padding: 6px;
-  transition: color 0.15s ease;
-}
-
-.ck-product-del:hover {
-  color: #d14747;
-}
-
-/* ── Tarjeta de resumen ── */
-.ck-summary-card {
-  background: #fff;
-  border-radius: 14px;
-  box-shadow: 0 2px 14px rgba(0, 0, 0, 0.05);
-  padding: 24px 22px;
-  position: sticky;
-  top: 24px;
-}
-
-.ck-summary-title {
-  font-weight: 600;
-  color: #2b2b2b;
-  margin: 0 0 18px;
-  font-size: 1.02rem;
-}
-
-.ck-summary-row {
-  display: flex;
-  justify-content: space-between;
-  font-size: 0.92rem;
-  color: #555;
-  margin-bottom: 12px;
-}
-
-.ck-free {
-  color: #2e9c4f;
-  font-weight: 600;
-}
-
-.ck-summary-divider {
-  height: 1px;
-  background: #eee6d8;
+/* ── Código de descuento ── */
+.ck-descuento-box {
   margin: 14px 0;
 }
 
-.ck-summary-total {
+.ck-descuento-input-row {
   display: flex;
-  justify-content: space-between;
-  font-size: 1.1rem;
-  font-weight: 700;
-  color: #2b2b2b;
-  margin-bottom: 20px;
+  gap: 8px;
 }
 
-.ck-btn-primary {
-  width: 100%;
-  background: linear-gradient(135deg, #E2A820 0%, #C8920A 100%);
-  color: #fff;
-  border: none;
-  border-radius: 10px;
-  padding: 13px 0;
-  font-weight: 600;
-  font-size: 0.98rem;
-  cursor: pointer;
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
-}
-
-.ck-btn-primary:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 6px 16px rgba(200, 146, 10, 0.35);
-}
-
-.ck-summary-note {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 0.78rem;
-  color: #999;
-  margin: 14px 0 0;
-  line-height: 1.4;
-}
-
-.ck-summary-note i {
-  color: #C8920A;
-}
-
-/* ── Estados: vacío / cargando ── */
-.ck-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 14px;
-  min-height: 70vh;
-  color: #8a8a8a;
-  text-align: center;
-}
-
-.ck-state i {
-  font-size: 2.4rem;
-  color: #C8920A;
-}
-
-.ck-spin {
-  animation: ck-spin 1.2s linear infinite;
-}
-
-@keyframes ck-spin {
-  from { transform: rotate(0deg); }
-  to   { transform: rotate(360deg); }
-}
-
-/* ── Confirmación de compra ── */
-.ck-success {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  min-height: 80vh;
-  padding: 24px;
-}
-
-.ck-success-icon i {
-  font-size: 3.4rem;
-  color: #2e9c4f;
-  margin-bottom: 18px;
-}
-
-.ck-success h2 {
-  font-family: 'Playfair Display', Georgia, serif;
-  color: #2b2b2b;
-  margin: 0 0 10px;
-}
-
-.ck-success p {
-  color: #777;
-  max-width: 380px;
-  margin: 0 0 24px;
-}
-
-.ck-success .ck-btn-primary {
-  width: auto;
-  padding: 12px 28px;
-}
-/* ══ Precio unitario en checkout ══ */
-.ck-product-unit {
-  font-size: 0.78rem;
-  color: #aaa;
-  margin: 2px 0 8px;
-}
-
-/* ══ Modal de verificación de datos ══ */
-.ck-modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.5);
-  backdrop-filter: blur(3px);
-  z-index: 9999;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 16px;
-}
-
-.ck-modal-box {
-  background: #fff;
-  border-radius: 16px;
-  padding: 32px 28px;
-  width: 100%;
-  max-width: 520px;
-  max-height: 90vh;
-  overflow-y: auto;
-  position: relative;
-  box-shadow: 0 20px 60px rgba(0,0,0,0.15);
-}
-
-.ck-modal-close {
-  position: absolute;
-  top: 16px;
-  right: 16px;
-  background: none;
-  border: none;
-  font-size: 1rem;
-  color: #aaa;
-  cursor: pointer;
-  padding: 6px;
-  transition: color 0.15s;
-}
-.ck-modal-close:hover { color: #333; }
-
-.ck-modal-header {
-  text-align: center;
-  margin-bottom: 24px;
-}
-
-.ck-modal-icon {
-  width: 56px;
-  height: 56px;
-  background: linear-gradient(135deg, #E2A820, #C8920A);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0 auto 14px;
-}
-.ck-modal-icon i {
-  font-size: 1.5rem;
-  color: #fff;
-}
-
-.ck-modal-title {
-  font-family: 'Playfair Display', Georgia, serif;
-  font-size: 1.4rem;
-  color: #2b2b2b;
-  margin: 0 0 6px;
-}
-
-.ck-modal-sub {
-  color: #888;
-  font-size: 0.88rem;
-  margin: 0;
-}
-
-.ck-modal-section {
-  margin-bottom: 20px;
-  padding-bottom: 20px;
-  border-bottom: 1px solid #f0ece2;
-}
-.ck-modal-section:last-of-type { border-bottom: none; }
-
-.ck-modal-section-title {
-  font-weight: 600;
-  color: #C8920A;
-  font-size: 0.85rem;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  margin: 0 0 12px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.ck-modal-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-}
-
-.ck-modal-dato {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.ck-modal-label {
-  font-size: 0.75rem;
-  color: #aaa;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-}
-
-.ck-modal-valor {
-  font-size: 0.9rem;
-  font-weight: 500;
-  color: #2b2b2b;
-}
-
-/* Dirección de envío (solo lectura, viene del perfil) */
-.ck-dir-option {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 14px;
+.ck-descuento-input {
+  flex: 1;
+  padding: 10px 14px;
   border: 1.5px solid #e8e2d5;
   border-radius: 10px;
-}
-.ck-dir-option.selected { border-color: #C8920A; background: #fdf9f0; }
-.ck-dir-readonly { cursor: default; }
-
-.ck-dir-info {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.ck-dir-ciudad { font-weight: 600; font-size: 0.88rem; color: #2b2b2b; }
-.ck-dir-detalle { font-size: 0.88rem; color: #2b2b2b; font-weight: 500; }
-
-.ck-dir-check { color: #C8920A; font-size: 1rem; }
-
-.ck-modal-no-dir {
-  text-align: center;
-  padding: 16px;
-  color: #aaa;
   font-size: 0.88rem;
-}
-.ck-modal-no-dir i { font-size: 1.5rem; color: #ddd; margin-bottom: 6px; display: block; }
-.ck-modal-link {
-  color: #C8920A;
-  text-decoration: none;
-  font-weight: 600;
-  font-size: 0.85rem;
-}
-
-/* Items resumen */
-.ck-modal-items {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin-bottom: 14px;
-}
-
-.ck-modal-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 0.85rem;
-}
-
-.ck-modal-item-nombre { font-weight: 600; color: #2b2b2b; flex: 1; }
-.ck-modal-item-det { color: #aaa; font-size: 0.78rem; white-space: nowrap; }
-.ck-modal-item-precio { font-weight: 600; color: #2b2b2b; white-space: nowrap; }
-
-.ck-modal-totales {
-  border-top: 1px solid #f0ece2;
-  padding-top: 10px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.ck-modal-total-row {
-  display: flex;
-  justify-content: space-between;
-  font-size: 0.88rem;
-  color: #666;
-}
-.ck-modal-total-row.final {
-  font-size: 1rem;
-  font-weight: 700;
+  background: #faf8f4;
   color: #2b2b2b;
-  padding-top: 6px;
-  border-top: 1px solid #eee;
-  margin-top: 4px;
+  font-family: 'Poppins', system-ui, sans-serif;
+  outline: none;
+  transition: border-color 0.2s;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.ck-descuento-input:focus {
+  border-color: #C8920A;
+}
+.ck-descuento-input::placeholder {
+  text-transform: none;
+  letter-spacing: normal;
+  color: #bbb;
+  font-size: 0.85rem;
 }
 
-/* Error */
-.ck-modal-error {
-  background: #fff5f5;
-  border: 1px solid #fecaca;
-  color: #dc2626;
-  padding: 10px 14px;
-  border-radius: 8px;
+.ck-descuento-btn {
+  padding: 10px 16px;
+  background: #2b2b2b;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
   font-size: 0.85rem;
-  margin-bottom: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  font-family: 'Poppins', system-ui, sans-serif;
+  transition: background 0.2s;
+}
+.ck-descuento-btn:hover:not(:disabled) {
+  background: #C8920A;
+}
+.ck-descuento-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.ck-descuento-error {
+  margin-top: 7px;
+  font-size: 0.78rem;
+  color: #d14747;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+/* Código aplicado con éxito */
+.ck-descuento-aplicado {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #f0faf4;
+  border: 1.5px solid #a7e3bc;
+  border-radius: 10px;
+  padding: 10px 14px;
+}
+
+.ck-descuento-aplicado-info {
   display: flex;
   align-items: center;
   gap: 8px;
-}
-
-/* Botones del modal */
-.ck-modal-actions {
-  display: flex;
-  gap: 10px;
-}
-
-.ck-btn-secondary {
-  flex: 1;
-  padding: 12px;
-  border: 1.5px solid #e0dbd0;
-  border-radius: 10px;
-  background: #fff;
-  color: #555;
-  font-size: 0.92rem;
+  font-size: 0.88rem;
+  color: #2e9c4f;
   font-weight: 500;
-  cursor: pointer;
-  transition: background 0.15s, color 0.15s;
 }
-.ck-btn-secondary:hover { background: #f5f1e8; color: #2b2b2b; }
 
-@media (max-width: 500px) {
-  .ck-modal-grid { grid-template-columns: 1fr; }
-  .ck-modal-actions { flex-direction: column; }
+.ck-descuento-quitar {
+  background: none;
+  border: none;
+  color: #bbb;
+  cursor: pointer;
+  font-size: 0.82rem;
+  padding: 4px 6px;
+  line-height: 1;
+  transition: color 0.2s;
+  border-radius: 6px;
+}
+.ck-descuento-quitar:hover {
+  color: #d14747;
+  background: #fff0f0;
+}
+
+/* Fila de descuento en el resumen */
+.ck-descuento-row {
+  color: #2e9c4f;
+}
+.ck-descuento-valor {
+  color: #2e9c4f;
+  font-weight: 600;
 }
