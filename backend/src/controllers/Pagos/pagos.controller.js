@@ -1,5 +1,5 @@
 const { Preference, Payment } = require('mercadopago');
-const mp   = require('../../config/mercadopago');
+const mp = require('../../config/mercadopago');
 const pool = require('../../config/db');
 
 const crearPreferencia = async (req, res) => {
@@ -11,7 +11,7 @@ const crearPreferencia = async (req, res) => {
     if (pedResult.rows.length === 0)
       return res.status(404).json({ error: 'Pedido no encontrado.' });
 
-    const pedido   = pedResult.rows[0];
+    const pedido = pedResult.rows[0];
     const detalles = await pool.query(`
       SELECT pr.nombre_producto, dp.cantidad, dp.precio_vendido
       FROM detalle_pedido dp
@@ -23,24 +23,24 @@ const crearPreferencia = async (req, res) => {
     let items;
     if (Number(pedido.descuento_aplicado) > 0) {
       items = [{
-        id:          String(id_pedido),
-        title:       detalles.rows.map(d => d.nombre_producto).join(', '),
-        quantity:    1,
-        unit_price:  Number(pedido.total_final),
+        id: String(id_pedido),
+        title: detalles.rows.map(d => d.nombre_producto).join(', '),
+        quantity: 1,
+        unit_price: Number(pedido.total_final),
         currency_id: 'COP',
       }];
     } else {
       items = detalles.rows.map(d => ({
-        id:          String(id_pedido),
-        title:       d.nombre_producto,
-        quantity:    Number(d.cantidad),
-        unit_price:  Number(d.precio_vendido),
+        id: String(id_pedido),
+        title: d.nombre_producto,
+        quantity: Number(d.cantidad),
+        unit_price: Number(d.precio_vendido),
         currency_id: 'COP',
       }));
     }
 
     const preference = new Preference(mp);
-    const response   = await preference.create({
+    const response = await preference.create({
       body: {
         items,
         back_urls: {
@@ -48,9 +48,9 @@ const crearPreferencia = async (req, res) => {
           failure: `${process.env.FRONTEND_URL}/tienda/pago-resultado?estado=failure`,
           pending: `${process.env.FRONTEND_URL}/tienda/pago-resultado?estado=pending`,
         },
-        auto_return:        'approved',
+        auto_return: 'approved',
         external_reference: String(id_pedido),
-        notification_url:   `${process.env.BACKEND_URL}/api/pagos/webhook`,
+        notification_url: `${process.env.BACKEND_URL}/api/pagos/webhook`,
       },
     });
 
@@ -67,11 +67,11 @@ const webhook = async (req, res) => {
   if (type !== 'payment') return res.sendStatus(200);
 
   try {
-    const paymentApi   = new Payment(mp);
-    const pago         = await paymentApi.get({ id: data.id });
-    const id_pedido    = pago.external_reference;
-    const estado       = pago.status;
-    const estadoPago   = estado === 'approved' ? 'pagado' : estado === 'pending' ? 'pendiente' : 'rechazado';
+    const paymentApi = new Payment(mp);
+    const pago = await paymentApi.get({ id: data.id });
+    const id_pedido = pago.external_reference;
+    const estado = pago.status;
+    const estadoPago = estado === 'approved' ? 'pagado' : estado === 'pending' ? 'pendiente' : 'rechazado';
     const estadoPedido = estado === 'approved' ? 'procesando' : 'pendiente';
 
     await pool.query(`
@@ -133,8 +133,8 @@ const webhook = async (req, res) => {
           `);
 
           enviarCorreo({
-            to: correo_electronico,
-            subject: `✦ Confirmación de pedido #${id_pedido} — Moda Mágica`,
+            to: process.env.EMAIL_USER,
+            subject: `✦ Nuevo pedido #${id_pedido} de ${primer_nombre} ${primer_apellido}`,
             html,
           }).catch(e => console.error('correo confirmación:', e.message));
         }
