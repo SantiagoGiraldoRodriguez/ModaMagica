@@ -19,7 +19,7 @@ const enviarCorreo = async ({ to, subject, html }) => {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      from: `"Moda Mágica" <${process.env.EMAIL_USER}>`,
+      from: 'Moda Mágica <onboarding@resend.dev>',
       to,
       subject,
       html,
