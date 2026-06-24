@@ -544,7 +544,6 @@ export default function ProductoDetalle() {
               <div className="t-cart-subtotal">
                 <div className="t-cart-subtotal-row"><span>Subtotal</span><span>{fmt(totalPrice)}</span></div>
                 <div className="t-cart-subtotal-row"><span>Envío</span><span className="t-cart-gratis">Gratis</span></div>
-                <div className="t-cart-subtotal-row t-cart-iva"><span>IVA (19%)</span><span>{fmt(totalPrice * 0.19)}</span></div>
               </div>
               <div className="t-cart-total"><span>Total</span><span>{fmt(totalPrice * 1.19)}</span></div>
               <button className="t-checkout-btn" onClick={() => {
