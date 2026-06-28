@@ -96,7 +96,7 @@ const FieldError = ({ msg }) =>
     </div>
   ) : null
 
-const Dropdown = ({ value, options, onChange, placeholder, error }) => {
+const Dropdown = ({ value, options, onChange, placeholder, error, disabled }) => {
   const [open, setOpen] = useState(false)
   const ref = useRef(null)
 
@@ -113,7 +113,13 @@ const Dropdown = ({ value, options, onChange, placeholder, error }) => {
 
   return (
     <div className="u-dropdown" ref={ref}>
-      <button type="button" className={`u-dropdown-btn${open ? ' open' : ''}${error ? ' has-error' : ''}`} onClick={() => setOpen(o => !o)}>
+      <button
+        type="button"
+        className={`u-dropdown-btn${open ? ' open' : ''}${error ? ' has-error' : ''}`}
+        onClick={() => { if (!disabled) setOpen(o => !o) }}
+        disabled={disabled}
+        style={{ opacity: disabled ? 0.5 : 1, cursor: disabled ? 'not-allowed' : 'pointer' }}
+      >
         <span className={seleccionada ? '' : 'u-dropdown-placeholder'}>{seleccionada ? seleccionada.label : (placeholder || value)}</span>
         <i className="bi bi-chevron-down u-dropdown-chevron"></i>
       </button>
@@ -142,6 +148,7 @@ export default function Usuarios() {
   const [filtroEst, setFiltroEst]     = useState('Todos los estados')
   const [modal, setModal]             = useState(false)
   const [editando, setEditando]       = useState(null)
+  const [soloEstado, setSoloEstado]   = useState(false)
   const [form, setForm]               = useState(formVacio)
   const [errors, setErrors]           = useState(erroresVacio)
   const [serverError, setServerError] = useState('')
@@ -174,26 +181,35 @@ export default function Usuarios() {
   const startRow   = (currentPage-1)*ITEMS_PER_PAGE
 
   const openAdd  = () => {
-    setEditando(null); setForm(formVacio); setErrors(erroresVacio); setServerError(''); setModal(true)
+    setEditando(null); setSoloEstado(false); setForm(formVacio); setErrors(erroresVacio); setServerError(''); setModal(true)
   }
 
   const openEdit = u => {
-    if (u.estado === 'inactivo') {
-      setServerError('No se puede editar un usuario inactivo. Cambia su estado a Activo primero.')
-      setModal(true)
-      setEditando(null)
-      setForm({ ...formVacio, estado: 'inactivo' })
-      return
-    }
     setEditando(u.id_usuario)
-    setForm({ primer_nombre: u.primer_nombre, segundo_nombre: u.segundo_nombre || '', primer_apellido: u.primer_apellido, segundo_apellido: u.segundo_apellido || '', correo: u.correo, telefono: u.telefono, contrasena: '', id_rol: u.id_rol, direccion: u.direccion || '', fecha_nacimiento: u.fecha_nacimiento ? u.fecha_nacimiento.split('T')[0] : '', estado: u.estado })
-    setErrors(erroresVacio); setServerError(''); setModal(true)
+    setSoloEstado(u.estado === 'inactivo')
+    setForm({
+      primer_nombre: u.primer_nombre,
+      segundo_nombre: u.segundo_nombre || '',
+      primer_apellido: u.primer_apellido,
+      segundo_apellido: u.segundo_apellido || '',
+      correo: u.correo,
+      telefono: u.telefono,
+      contrasena: '',
+      id_rol: u.id_rol,
+      direccion: u.direccion || '',
+      fecha_nacimiento: u.fecha_nacimiento ? u.fecha_nacimiento.split('T')[0] : '',
+      estado: u.estado
+    })
+    setErrors(erroresVacio)
+    setServerError('')
+    setModal(true)
   }
 
   const openInfo = u => setInfoUsuario(u)
   const closeInfo = () => setInfoUsuario(null)
 
   const validarTodo = () => {
+    if (soloEstado) return true
     const e = {
       primer_nombre:    validarNombre(form.primer_nombre, 'El primer nombre'),
       segundo_nombre:   validarNombreOpcional(form.segundo_nombre, 'El segundo nombre'),
@@ -263,6 +279,7 @@ export default function Usuarios() {
   }
 
   const borderError = field => errors[field] ? { borderColor:'var(--gold)' } : {}
+  const disabledStyle = { opacity: 0.5, cursor: 'not-allowed' }
 
   return (
     <>
@@ -301,8 +318,7 @@ export default function Usuarios() {
                         <td>
                           <div className="action-btns">
                             <button className="tbl-btn info" onClick={()=>openInfo(u)}><i className="bi bi-info-circle"></i> Info</button>
-                            <button className={`tbl-btn edit${u.estado==='inactivo'?' disabled':''}`} onClick={()=>openEdit(u)} title={u.estado==='inactivo'?'Usuario inactivo: no se puede editar':'Editar'}><i className="bi bi-pencil"></i></button>
-                            {/* FIX: el Superadmin (id_rol === 1) nunca puede ser eliminado */}
+                            <button className="tbl-btn edit" onClick={()=>openEdit(u)}><i className="bi bi-pencil"></i></button>
                             {u.id_rol !== 1 && (
                               <button className="tbl-btn delete" onClick={()=>setConfirm({ show:true, id:u.id_usuario, error:'' })}><i className="bi bi-trash"></i></button>
                             )}
@@ -376,12 +392,7 @@ export default function Usuarios() {
 
             <div className="modal-actions">
               <button className="btn-secondary" onClick={closeInfo}>Cerrar</button>
-              <button
-                className="btn-primary"
-                onClick={()=>{ closeInfo(); openEdit(infoUsuario) }}
-                disabled={infoUsuario.estado === 'inactivo'}
-                title={infoUsuario.estado === 'inactivo' ? 'No se puede editar un usuario inactivo' : 'Editar'}
-              >
+              <button className="btn-primary" onClick={()=>{ closeInfo(); openEdit(infoUsuario) }}>
                 <i className="bi bi-pencil"></i> Editar
               </button>
             </div>
@@ -393,26 +404,89 @@ export default function Usuarios() {
         <div className="modal-overlay" onClick={e=>e.target===e.currentTarget&&setModal(false)}>
           <div className="modal-box" style={{ maxWidth:600 }}>
             <button className="modal-close" onClick={()=>setModal(false)}><i className="bi bi-x-lg"></i></button>
-            <div className="modal-title"><i className="bi bi-person-plus" style={{ color:'var(--gold)' }}></i> {editando?'Editar usuario':'Nuevo usuario'}</div>
+            <div className="modal-title">
+              <i className="bi bi-person-plus" style={{ color:'var(--gold)' }}></i> {editando?'Editar usuario':'Nuevo usuario'}
+            </div>
+
+            {soloEstado && (
+              <div className="u-server-error" style={{ background:'rgba(201,150,42,0.1)', borderColor:'var(--gold)', color:'var(--gold)' }}>
+                <i className="bi bi-info-circle"></i> Usuario inactivo: solo puedes modificar el estado.
+              </div>
+            )}
 
             {serverError && (<div className="u-server-error"><i className="bi bi-exclamation-triangle"></i> {serverError}</div>)}
 
             <div className="u-form-grid">
-              <div className="form-group"><label className="form-label">Primer nombre <span style={{ color:'var(--gold)' }}>*</span></label><input className="form-control" style={borderError('primer_nombre')} value={form.primer_nombre} onChange={e=>{ setForm({...form,primer_nombre:e.target.value}); setErrors(er=>({...er,primer_nombre:validarNombre(e.target.value,'El primer nombre')})) }} onBlur={()=>setErrors(er=>({...er,primer_nombre:validarNombre(form.primer_nombre,'El primer nombre')}))} /><FieldError msg={errors.primer_nombre} /></div>
-              <div className="form-group"><label className="form-label">Segundo nombre</label><input className="form-control" style={borderError('segundo_nombre')} value={form.segundo_nombre} onChange={e=>{ setForm({...form,segundo_nombre:e.target.value}); setErrors(er=>({...er,segundo_nombre:validarNombreOpcional(e.target.value,'El segundo nombre')})) }} onBlur={()=>setErrors(er=>({...er,segundo_nombre:validarNombreOpcional(form.segundo_nombre,'El segundo nombre')}))} /><FieldError msg={errors.segundo_nombre} /></div>
-              <div className="form-group"><label className="form-label">Primer apellido <span style={{ color:'var(--gold)' }}>*</span></label><input className="form-control" style={borderError('primer_apellido')} value={form.primer_apellido} onChange={e=>{ setForm({...form,primer_apellido:e.target.value}); setErrors(er=>({...er,primer_apellido:validarNombre(e.target.value,'El primer apellido')})) }} onBlur={()=>setErrors(er=>({...er,primer_apellido:validarNombre(form.primer_apellido,'El primer apellido')}))} /><FieldError msg={errors.primer_apellido} /></div>
-              <div className="form-group"><label className="form-label">Segundo apellido</label><input className="form-control" style={borderError('segundo_apellido')} value={form.segundo_apellido} onChange={e=>{ setForm({...form,segundo_apellido:e.target.value}); setErrors(er=>({...er,segundo_apellido:validarNombreOpcional(e.target.value,'El segundo apellido')})) }} onBlur={()=>setErrors(er=>({...er,segundo_apellido:validarNombreOpcional(form.segundo_apellido,'El segundo apellido')}))} /><FieldError msg={errors.segundo_apellido} /></div>
-              <div className="form-group"><label className="form-label">Correo electrónico <span style={{ color:'var(--gold)' }}>*</span></label><input className="form-control" type="text" style={borderError('correo')} value={form.correo} onChange={e=>{ setForm({...form,correo:e.target.value}); setErrors(er=>({...er,correo:validarCorreo(e.target.value)})) }} onBlur={()=>setErrors(er=>({...er,correo:validarCorreo(form.correo)}))} /><FieldError msg={errors.correo} /></div>
-              <div className="form-group"><label className="form-label">Teléfono <span style={{ color:'var(--gold)' }}>*</span></label><input className="form-control" style={borderError('telefono')} value={form.telefono} onChange={e=>{ setForm({...form,telefono:e.target.value}); setErrors(er=>({...er,telefono:validarTelefono(e.target.value)})) }} onBlur={()=>setErrors(er=>({...er,telefono:validarTelefono(form.telefono)}))} /><FieldError msg={errors.telefono} /></div>
-              <div className="form-group u-form-full"><label className="form-label">Dirección <span style={{ color:'var(--gold)' }}>*</span></label><input className="form-control" style={borderError('direccion')} value={form.direccion} onChange={e=>{ setForm({...form,direccion:e.target.value}); setErrors(er=>({...er,direccion:e.target.value.trim()?'':'La dirección es obligatoria.'})) }} onBlur={()=>setErrors(er=>({...er,direccion:form.direccion.trim()?'':'La dirección es obligatoria.'}))} /><FieldError msg={errors.direccion} /></div>
-              <div className="form-group"><label className="form-label">Fecha de nacimiento <span style={{ color:'var(--gold)' }}>*</span></label><input className="form-control" type="date" style={borderError('fecha_nacimiento')} value={form.fecha_nacimiento} onChange={e=>{ setForm({...form,fecha_nacimiento:e.target.value}); setErrors(er=>({...er,fecha_nacimiento:validarFechaNacimiento(e.target.value)})) }} onBlur={()=>setErrors(er=>({...er,fecha_nacimiento:validarFechaNacimiento(form.fecha_nacimiento)}))} /><FieldError msg={errors.fecha_nacimiento} /></div>
-              <div className="form-group"><label className="form-label">Contraseña {!editando && <span style={{ color:'var(--gold)' }}>*</span>}</label><input className="form-control" type="password" style={borderError('contrasena')} value={form.contrasena} onChange={e=>{ setForm({...form,contrasena:e.target.value}); setErrors(er=>({...er,contrasena:validarContrasena(e.target.value, editando)})) }} onBlur={()=>setErrors(er=>({...er,contrasena:validarContrasena(form.contrasena, editando)}))} /><FieldError msg={errors.contrasena} /></div>
+              <div className="form-group">
+                <label className="form-label">Primer nombre <span style={{ color:'var(--gold)' }}>*</span></label>
+                <input className="form-control" style={{ ...borderError('primer_nombre'), ...(soloEstado ? disabledStyle : {}) }} disabled={soloEstado} value={form.primer_nombre}
+                  onChange={e=>{ setForm({...form,primer_nombre:e.target.value}); setErrors(er=>({...er,primer_nombre:validarNombre(e.target.value,'El primer nombre')})) }}
+                  onBlur={()=>setErrors(er=>({...er,primer_nombre:validarNombre(form.primer_nombre,'El primer nombre')}))} />
+                <FieldError msg={errors.primer_nombre} />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Segundo nombre</label>
+                <input className="form-control" style={{ ...borderError('segundo_nombre'), ...(soloEstado ? disabledStyle : {}) }} disabled={soloEstado} value={form.segundo_nombre}
+                  onChange={e=>{ setForm({...form,segundo_nombre:e.target.value}); setErrors(er=>({...er,segundo_nombre:validarNombreOpcional(e.target.value,'El segundo nombre')})) }}
+                  onBlur={()=>setErrors(er=>({...er,segundo_nombre:validarNombreOpcional(form.segundo_nombre,'El segundo nombre')}))} />
+                <FieldError msg={errors.segundo_nombre} />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Primer apellido <span style={{ color:'var(--gold)' }}>*</span></label>
+                <input className="form-control" style={{ ...borderError('primer_apellido'), ...(soloEstado ? disabledStyle : {}) }} disabled={soloEstado} value={form.primer_apellido}
+                  onChange={e=>{ setForm({...form,primer_apellido:e.target.value}); setErrors(er=>({...er,primer_apellido:validarNombre(e.target.value,'El primer apellido')})) }}
+                  onBlur={()=>setErrors(er=>({...er,primer_apellido:validarNombre(form.primer_apellido,'El primer apellido')}))} />
+                <FieldError msg={errors.primer_apellido} />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Segundo apellido</label>
+                <input className="form-control" style={{ ...borderError('segundo_apellido'), ...(soloEstado ? disabledStyle : {}) }} disabled={soloEstado} value={form.segundo_apellido}
+                  onChange={e=>{ setForm({...form,segundo_apellido:e.target.value}); setErrors(er=>({...er,segundo_apellido:validarNombreOpcional(e.target.value,'El segundo apellido')})) }}
+                  onBlur={()=>setErrors(er=>({...er,segundo_apellido:validarNombreOpcional(form.segundo_apellido,'El segundo apellido')}))} />
+                <FieldError msg={errors.segundo_apellido} />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Correo electrónico <span style={{ color:'var(--gold)' }}>*</span></label>
+                <input className="form-control" type="text" style={{ ...borderError('correo'), ...(soloEstado ? disabledStyle : {}) }} disabled={soloEstado} value={form.correo}
+                  onChange={e=>{ setForm({...form,correo:e.target.value}); setErrors(er=>({...er,correo:validarCorreo(e.target.value)})) }}
+                  onBlur={()=>setErrors(er=>({...er,correo:validarCorreo(form.correo)}))} />
+                <FieldError msg={errors.correo} />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Teléfono <span style={{ color:'var(--gold)' }}>*</span></label>
+                <input className="form-control" style={{ ...borderError('telefono'), ...(soloEstado ? disabledStyle : {}) }} disabled={soloEstado} value={form.telefono}
+                  onChange={e=>{ setForm({...form,telefono:e.target.value}); setErrors(er=>({...er,telefono:validarTelefono(e.target.value)})) }}
+                  onBlur={()=>setErrors(er=>({...er,telefono:validarTelefono(form.telefono)}))} />
+                <FieldError msg={errors.telefono} />
+              </div>
+              <div className="form-group u-form-full">
+                <label className="form-label">Dirección <span style={{ color:'var(--gold)' }}>*</span></label>
+                <input className="form-control" style={{ ...borderError('direccion'), ...(soloEstado ? disabledStyle : {}) }} disabled={soloEstado} value={form.direccion}
+                  onChange={e=>{ setForm({...form,direccion:e.target.value}); setErrors(er=>({...er,direccion:e.target.value.trim()?'':'La dirección es obligatoria.'})) }}
+                  onBlur={()=>setErrors(er=>({...er,direccion:form.direccion.trim()?'':'La dirección es obligatoria.'}))} />
+                <FieldError msg={errors.direccion} />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Fecha de nacimiento <span style={{ color:'var(--gold)' }}>*</span></label>
+                <input className="form-control" type="date" style={{ ...borderError('fecha_nacimiento'), ...(soloEstado ? disabledStyle : {}) }} disabled={soloEstado} value={form.fecha_nacimiento}
+                  onChange={e=>{ setForm({...form,fecha_nacimiento:e.target.value}); setErrors(er=>({...er,fecha_nacimiento:validarFechaNacimiento(e.target.value)})) }}
+                  onBlur={()=>setErrors(er=>({...er,fecha_nacimiento:validarFechaNacimiento(form.fecha_nacimiento)}))} />
+                <FieldError msg={errors.fecha_nacimiento} />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Contraseña {!editando && <span style={{ color:'var(--gold)' }}>*</span>}</label>
+                <input className="form-control" type="password" style={{ ...borderError('contrasena'), ...(soloEstado ? disabledStyle : {}) }} disabled={soloEstado} value={form.contrasena}
+                  onChange={e=>{ setForm({...form,contrasena:e.target.value}); setErrors(er=>({...er,contrasena:validarContrasena(e.target.value, editando)})) }}
+                  onBlur={()=>setErrors(er=>({...er,contrasena:validarContrasena(form.contrasena, editando)}))} />
+                <FieldError msg={errors.contrasena} />
+              </div>
               <div className="form-group u-form-full">
                 <label className="form-label">Rol <span style={{ color:'var(--gold)' }}>*</span></label>
                 <Dropdown
                   value={form.id_rol}
                   placeholder="Seleccionar..."
                   error={!!errors.id_rol}
+                  disabled={soloEstado}
                   onChange={v => { setForm({...form, id_rol: v}); setErrors(er=>({...er, id_rol: validarRol(v)})) }}
                   options={[
                     { value: '', label: 'Seleccionar...' },
