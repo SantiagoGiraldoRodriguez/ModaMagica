@@ -241,13 +241,35 @@ const create = async (req, res) => {
 
 // ─── UPDATE ───────────────────────────────────────────────────────────────────
 const update = async (req, res) => {
+  const { estado } = req.body;
+  const keys = Object.keys(req.body);
+
+  // ── Caso especial: solo viene { estado } → usuario inactivo cambiando estado ──
+  if (keys.length === 1 && keys[0] === 'estado') {
+    if (!['activo', 'inactivo'].includes(estado))
+      return res.status(400).json({ error: 'Estado no válido.' });
+
+    try {
+      const result = await pool.query(
+        'UPDATE usuario SET estado = $1 WHERE id_usuario = $2 RETURNING *',
+        [estado, req.params.id]
+      );
+      if (result.rows.length === 0)
+        return res.status(404).json({ error: 'Usuario no encontrado.' });
+      return res.json(result.rows[0]);
+    } catch (err) {
+      return res.status(500).json({ error: err.message });
+    }
+  }
+
+  // ── Flujo normal: actualización completa ──
   const errores = validar(req.body, true);
   if (Object.keys(errores).length > 0)
     return res.status(400).json({ errores });
 
   const {
     primer_nombre, segundo_nombre, primer_apellido, segundo_apellido,
-    correo, telefono, contrasena, id_rol, direccion, fecha_nacimiento, estado
+    correo, telefono, contrasena, id_rol, direccion, fecha_nacimiento
   } = req.body;
 
   try {
