@@ -409,7 +409,6 @@ const updatePerfilTienda = async (req, res) => {
 // ─── DELETE ───────────────────────────────────────────────────────────────────
 const remove = async (req, res) => {
   try {
-    // FIX: el Superadmin nunca puede ser eliminado
     const usuario = await pool.query(
       'SELECT id_rol FROM usuario WHERE id_usuario = $1',
       [req.params.id]
@@ -444,4 +443,4 @@ const remove = async (req, res) => {
   }
 };
 
-module.exports = { getAll, getById, create, update, updatePerfilTienda, remove };
+module.exports = { getAll, getById, create, update, updatePerfilTienda, remove };;
