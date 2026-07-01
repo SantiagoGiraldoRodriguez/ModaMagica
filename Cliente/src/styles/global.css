@@ -3,7 +3,7 @@
 
 
 :root {
-  --bg: #f4f6fb;
+  --bg: #f4f6fb;   /*---------------------------------- AQUI SE HACE EL CAMBIO DEL FONDO---------------------------------------- */
   --card: #ffffff;
   --text: #1e293b;
   --text-secondary: #6c7480;
